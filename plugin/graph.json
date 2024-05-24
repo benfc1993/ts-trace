@@ -1,0 +1,34 @@
+{
+  "/project/src/another.ts#testingNest": [
+    "/project/src/another.ts#testingNest2>callName:testingNest2,lineNumber:10",
+    "/node_modules/typescript/lib/lib.es2015.core.d.ts#repeat>callName:repeat,lineNumber:12"
+  ],
+  "/project/src/another.ts#testingNest2": [
+    "node_internal#join>callName:join,lineNumber:16"
+  ],
+  "/project/src/another.ts#_root": [
+    "/project/src/another.ts#testingNest2>callName:testingNest2,lineNumber:7"
+  ],
+  "/project/src/another.ts#testing": [],
+  "/project/src/another.ts#default": [],
+  "/project/src/index.ts#_root": [
+    "/project/src/another.ts#testing>callName:testing,lineNumber:5",
+    "/project/src/somethingElse.ts#chatty>callName:chatty,lineNumber:6",
+    "/project/src/another.ts#testingNest2>callName:b,lineNumber:6",
+    "/project/src/another.ts#testingNest2>callName:b,lineNumber:7"
+  ],
+  "/project/src/otherFile.ts#test": [
+    "/project/src/another.ts#testing>callName:testing,lineNumber:4"
+  ],
+  "/project/src/somethingElse.ts#chatty": [
+    "/project/src/another.ts#testing>callName:testing,lineNumber:4",
+    "/project/src/another.ts#testingNest2>callName:default,lineNumber:5",
+    "/project/src/another.ts#testingNest>callName:testingNest,lineNumber:5",
+    "/node_modules/typescript/lib/lib.dom.d.ts#log>callName:log,lineNumber:6",
+    "/project/src/another.ts#testing>callName:testing,lineNumber:7"
+  ],
+  "/node_modules/typescript/lib/lib.es2015.core.d.ts#repeat": [],
+  "node_internal#join": [],
+  "/node_modules/typescript/lib/lib.dom.d.ts#log": []
+}
+
