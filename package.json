@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "cp plugin/index.html dist/index.html && esbuild plugin/src/index.ts --bundle --watch --outdir=dist --minify --servedir=dist",
+    "dev": "cp plugin/viewer/index.html dist/index.html && esbuild plugin/viewer/index.ts --bundle --watch --outdir=dist --minify --servedir=dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

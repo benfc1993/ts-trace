@@ -2,14 +2,15 @@ import { writeFileSync } from "fs";
 import type { CallExpression, SourceFile } from "ts-morph";
 
 import { Project, SyntaxKind, Identifier } from "ts-morph";
-import type { CallTraces, ExternalTrace } from "./types";
+import type { CallTraces } from "./types";
 import { cwd } from "process";
 import path from "path";
 import { config } from ".";
+import type { ExternalTrace } from "../types";
 
 export function createCallTraces() {
   const project = new Project();
-  project.addSourceFilesFromTsConfig("./tsconfig.json");
+  project.addSourceFilesFromTsConfig("./project/tsconfig.json");
   const sourceFiles = project.getSourceFiles();
 
   let calls: CallTraces = {};
