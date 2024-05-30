@@ -18,7 +18,7 @@ export function createGraph() {
 function generateNodes(traces: CallTraces) {
   Object.entries(traces).map(([filePath, callTrace]) => {
     [...Object.keys(callTrace.functionCalls), ...callTrace.exports].forEach(
-      (trace) => (nodes[`${filePath}#${trace}`] = []),
+      (trace) => (nodes[`${filePath}#${trace}`] = { in: [], out: [] }),
     );
   });
 }
@@ -29,8 +29,16 @@ function generateEdges(traces: CallTraces) {
       calls.forEach((call) => {
         const externalPath = `${call.filePath}#${call.externalName}`;
         const externalCall = { connectionId: externalPath, ...call };
-        if (!nodes[externalPath]) nodes[externalPath] = [];
-        nodes[`${sourceFilePath}#${functionName}`].push(externalCall);
+        if (!nodes[externalPath]) nodes[externalPath] = { in: [], out: [] };
+        nodes[`${sourceFilePath}#${functionName}`].in.push(externalCall);
+      });
+    });
+
+    Object.entries(callTrace.upstream).forEach(([functionName, calls]) => {
+      calls.forEach((call) => {
+        const nodeKey = `${sourceFilePath}#${functionName}`;
+        if (!nodes[nodeKey]) nodes[nodeKey] = { in: [], out: [] };
+        nodes[nodeKey].out.push(call);
       });
     });
   });

@@ -8,7 +8,7 @@ import { Config } from "./types";
 export const config: Config = {
   debug: process.argv.indexOf("--debug") > 0,
   includeNodeModules: argv.indexOf("--include-node-modules") > 0,
-  includeInternalCalls: argv.indexOf("--exclude-internal") === -1,
+  includeInternalCalls: argv.indexOf("--include-internal") > 0,
 };
 
 createCallTraces();

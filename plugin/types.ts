@@ -7,4 +7,4 @@ export type ExternalTrace = {
 
 export type Connection = ExternalTrace & { connectionId: string };
 
-export type FileNodes = Record<string, Connection[]>;
+export type FileNodes = Record<string, { out: string[]; in: Connection[] }>;

@@ -17,7 +17,8 @@ export function createCallTraces() {
 
   sourceFiles.forEach((sourceFile) => {
     const fileKey = projectRelativePath(sourceFile.getFilePath());
-    calls[fileKey] = { exports: [], functionCalls: {} };
+    if (!calls[fileKey])
+      calls[fileKey] = { exports: [], functionCalls: {}, upstream: {} };
 
     calls[fileKey].exports = sourceFile
       .getExportSymbols()
@@ -25,6 +26,8 @@ export function createCallTraces() {
 
     const newCalls = getWrappedCallExpressions(sourceFile);
     calls[fileKey].functionCalls = newCalls;
+
+    addReverseLinks(newCalls, calls, fileKey);
 
     const topLevelCallIdentifiers = sourceFile
       ?.getChildrenOfKind(SyntaxKind.ExpressionStatement)
@@ -112,4 +115,22 @@ function callExpressionsToExternalTrace(
 
 function projectRelativePath(filePath: string) {
   return filePath.replace(cwd(), "");
+}
+function addReverseLinks(
+  newCalls: Record<string, ExternalTrace[]>,
+  calls: CallTraces,
+  fileKey: string,
+) {
+  Object.entries(newCalls).forEach(([functionName, externalCalls]) => {
+    externalCalls.forEach((call) => {
+      if (!calls[call.filePath])
+        calls[call.filePath] = { exports: [], functionCalls: {}, upstream: {} };
+      if (!calls[call.filePath].upstream[call.externalName])
+        calls[call.filePath].upstream[call.externalName] = [];
+
+      calls[call.filePath].upstream[call.externalName].push(
+        `${fileKey}#${functionName}`,
+      );
+    });
+  });
 }

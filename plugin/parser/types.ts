@@ -1,6 +1,7 @@
 import { ExternalTrace } from "../types";
 
 export type CallTrace = {
+  upstream: { [functionName: string]: string[] };
   exports: string[];
   functionCalls: { [functionName: string]: ExternalTrace[] };
 };

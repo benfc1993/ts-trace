@@ -1,5 +1,5 @@
 import { addInteraction } from "./interactions";
-import { parseGraph } from "./parseGraph";
+import { GraphNodes, parseGraph } from "./parseGraph";
 import { State, Vector } from "./types";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -21,8 +21,11 @@ export function resize() {
   ctx.translate(-state.canvasOrigin.x, -state.canvasOrigin.y);
 }
 
+let nodes: GraphNodes = {};
+
 async function setup() {
-  await parseGraph();
+  nodes = await parseGraph();
+  console.log(nodes);
   addInteraction(canvas);
   resize();
   draw();
@@ -66,7 +69,32 @@ function draw() {
     visibleWidth,
     visibleHeight,
   );
-  drawFile("main", ["Test", "Nesting"], { x: 120, y: 430 });
+  Object.entries(nodes).forEach(([file, node]) => {
+    drawFile(file, Object.keys(node.functions), node.position);
+  });
+  Object.entries(nodes).forEach(([file, node]) => {
+    Object.values(node.functions).forEach((connections, idx) => {
+      const functionPosition = {
+        x: node.position.x + 100,
+        y: node.position.y + 25 + 25 * idx + 12.5,
+      };
+      connections.forEach((connection) => {
+        const [connectedFile, connectedFunction] =
+          connection.connectionId.split("#");
+        const externalNode = nodes[connectedFile];
+        const externalFunctionPosition = {
+          x: externalNode.position.x,
+          y:
+            externalNode.position.y +
+            25 +
+            Object.keys(externalNode.functions).indexOf(connectedFunction) *
+              25 +
+            12.5,
+        };
+        drawPath(functionPosition, externalFunctionPosition);
+      });
+    });
+  });
   requestAnimationFrame(() => draw());
 }
 
