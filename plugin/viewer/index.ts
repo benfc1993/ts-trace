@@ -2,6 +2,12 @@ import { addInteraction } from "./interactions";
 import { GraphNodes, parseGraph } from "./parseGraph";
 import { State, Vector } from "./types";
 
+export const NODE_LINE_HEIGHT = 25;
+export const NODE_WIDTH = 100;
+export const NODE_SPACING = NODE_WIDTH * 2;
+const lineColor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`;
+const highlightColor = "red";
+
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 export const ctx = canvas.getContext("2d")!;
 if (!ctx) throw new Error("No context");
@@ -22,12 +28,16 @@ export function resize() {
 }
 
 let nodes: GraphNodes = {};
+const connectionLines: { connection: string; start: Vector; end: Vector }[] =
+  [];
+export const higlightedConnections: Set<string> = new Set();
 
 async function setup() {
   nodes = await parseGraph();
-  console.log(nodes);
   addInteraction(canvas);
   resize();
+  createFunctionPositions();
+  createConnections();
   draw();
 }
 
@@ -60,6 +70,50 @@ export const Mouse = {
 export const functionPositions: Record<string, { start: Vector; end: Vector }> =
   {};
 
+function createFunctionPositions() {
+  Object.entries(nodes).forEach(([file, node]) => {
+    Object.keys(node.functions).forEach((functionName, idx) => {
+      const functionId = file + "#" + functionName;
+      const height = NODE_LINE_HEIGHT * (idx + 1);
+      functionPositions[functionId] = {
+        start: {
+          x: node.position.x,
+          y: node.position.y + height,
+        },
+        end: {
+          x: node.position.x + NODE_WIDTH,
+          y: node.position.y + height + NODE_LINE_HEIGHT,
+        },
+      };
+    });
+  });
+}
+
+function createConnections() {
+  Object.entries(nodes).forEach(([filePath, node]) => {
+    Object.entries(node.functions).forEach(([functionName, connections]) => {
+      const functionPosition = functionPositions[filePath + "#" + functionName];
+      connections.forEach((connection) => {
+        const externalFunctionPosition =
+          functionPositions[connection.connectionId];
+
+        connectionLines.push({
+          connection:
+            filePath + "#" + functionName + "-" + connection.connectionId,
+          start: {
+            x: functionPosition.end.x,
+            y: functionPosition.start.y + NODE_LINE_HEIGHT / 2 - 2.5,
+          },
+          end: {
+            x: externalFunctionPosition.start.x,
+            y: externalFunctionPosition.start.y + NODE_LINE_HEIGHT / 2 - 2.5,
+          },
+        });
+      });
+    });
+  });
+}
+
 function draw() {
   const visibleWidth = ctx.canvas.width / state.scale;
   const visibleHeight = ctx.canvas.height / state.scale;
@@ -72,29 +126,16 @@ function draw() {
   Object.entries(nodes).forEach(([file, node]) => {
     drawFile(file, Object.keys(node.functions), node.position);
   });
-  Object.entries(nodes).forEach(([file, node]) => {
-    Object.values(node.functions).forEach((connections, idx) => {
-      const functionPosition = {
-        x: node.position.x + 100,
-        y: node.position.y + 25 + 25 * idx + 12.5,
-      };
-      connections.forEach((connection) => {
-        const [connectedFile, connectedFunction] =
-          connection.connectionId.split("#");
-        const externalNode = nodes[connectedFile];
-        const externalFunctionPosition = {
-          x: externalNode.position.x,
-          y:
-            externalNode.position.y +
-            25 +
-            Object.keys(externalNode.functions).indexOf(connectedFunction) *
-              25 +
-            12.5,
-        };
-        drawPath(functionPosition, externalFunctionPosition);
-      });
+
+  connectionLines.forEach(({ connection, start, end }) => {
+    containedStyles(() => {
+      ctx.strokeStyle = higlightedConnections.has(connection)
+        ? highlightColor
+        : lineColor;
+      drawPath(start, end);
     });
   });
+
   requestAnimationFrame(() => draw());
 }
 
@@ -107,41 +148,79 @@ function drawPath(from: Vector, to: Vector) {
 }
 
 function drawFile(fileName: string, functions: string[], position: Vector) {
+  const padding = 5;
+  const adjustedFileName = fileName.includes("node_modules")
+    ? fileName.split("/").slice(1, 3).join("/")
+    : fileName;
   containedStyles(() => {
     ctx.fillStyle = "#555";
     ctx.strokeStyle = "#f2f2f2";
     ctx.lineWidth = 2;
-    ctx.fillRect(position.x, position.y, 100, 25 + 25 * functions.length + 5);
-    ctx.strokeRect(position.x, position.y, 100, 25 + 25 * functions.length + 5);
+    ctx.fillRect(
+      position.x,
+      position.y,
+      NODE_WIDTH,
+      NODE_LINE_HEIGHT + NODE_LINE_HEIGHT * functions.length + padding,
+    );
+    ctx.strokeRect(
+      position.x,
+      position.y,
+      NODE_WIDTH,
+      NODE_LINE_HEIGHT + NODE_LINE_HEIGHT * functions.length + padding,
+    );
     ctx.fillStyle = "#f2f2f2";
-    ctx.fillText(fileName, position.x + 5, position.y + 17.5, 90);
+    ctx.fillText(
+      adjustedFileName,
+      position.x + padding,
+      position.y + NODE_LINE_HEIGHT / 2 + padding,
+      NODE_WIDTH - padding * 2,
+    );
     functions.forEach((functionName, i) => {
       drawFunction(
         functionName,
-        functionName,
-        { x: position.x + 5, y: position.y + 25 * (i + 1) },
-        90,
-        25,
+        { x: position.x + padding, y: position.y + NODE_LINE_HEIGHT * (i + 1) },
+        NODE_WIDTH - padding * 2,
+        NODE_LINE_HEIGHT,
       );
     });
   });
 }
 
 function drawFunction(
-  functionId: string,
   functionName: string,
   position: Vector,
   width: number,
   height: number,
 ) {
+  const radius = 3;
   containedStyles(() => {
     ctx.fillStyle = "#f2f2f2";
-    ctx.fillText(functionName, position.x, position.y + height / 2, 90);
+    ctx.fillText(functionName, position.x, position.y + height / 2, width);
+    ctx.beginPath();
+    ctx.ellipse(
+      position.x + width + 5,
+      position.y + height / 2 - 2.5,
+      radius,
+      radius,
+      0,
+      0,
+      2 * Math.PI,
+    );
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(
+      position.x - 5,
+      position.y + height / 2 - 2.5,
+      radius,
+      radius,
+      0,
+      0,
+      2 * Math.PI,
+    );
+    ctx.closePath();
+    ctx.fill();
   });
-  functionPositions[functionId] = {
-    start: position,
-    end: { x: position.x + width, y: position.y + height },
-  };
 }
 
 function containedStyles(func: () => void) {

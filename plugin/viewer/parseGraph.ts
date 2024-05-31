@@ -1,67 +1,85 @@
 import { readFileSync } from "fs";
 import type { Connection, FileNodes } from "../types";
 import { Vector } from "./types";
+import { NODE_SPACING } from ".";
+import { getNodeById } from "./getNodes";
 
-export type GraphNodes = Record<
-  string,
-  { position: Vector; functions: Record<string, Connection[]> }
->;
+type GraphNode = { position: Vector; functions: Record<string, Connection[]> };
+
+export type GraphNodes = Record<string, GraphNode>;
 
 export const nodes: GraphNodes = {};
-const positions: Set<string> = new Set();
+const positions: Record<number, number> = {};
 
 export async function parseGraph() {
   const graph = (await import("../graph.json")).default as unknown as FileNodes;
-  console.log(graph);
 
-  Object.entries(graph).forEach(([file, connections]) => {
-    console.log(file);
-    const [fileName, functionName] = file.split("#");
-    const position = calculateFilePosition(connections.in);
-    console.log(position);
-    if (!nodes[fileName])
-      nodes[fileName] = {
-        position: position ?? { x: 0, y: 0 },
-        functions: {},
-      };
+  const entries = Object.entries(graph);
 
-    if (
-      nodes[fileName].position &&
-      position !== null &&
-      position.x < nodes[fileName].position.x
-    )
-      nodes[fileName].position = position;
-    nodes[fileName].functions[functionName] = connections.in;
+  for (const [functionId, connections] of entries) {
+    const [filePath, functionName] = functionId.split("#");
+    if (getNodeById(functionId)) {
+      const node = getNodeById(functionId);
+      node.functions[functionName] = connections.in;
+      continue;
+    }
+
+    const newNode: GraphNode = {
+      position: { x: 0, y: 0 },
+      functions: { [functionName]: connections.in },
+    };
+
+    nodes[filePath] = newNode;
+
+    traverseConnections(newNode, connections.in);
+  }
+
+  Object.values(nodes).forEach((node) => {
+    const currentY = positions[node.position.x] ?? 0;
+    node.position.y =
+      currentY + Object.keys(node.functions).length * 25 + NODE_SPACING;
+    positions[node.position.x] = node.position.y;
   });
-
-  console.log(nodes);
   return nodes;
-}
 
-function calculateFilePosition(connections: Connection[]): Vector | null {
-  for (let i = 0; i < connections.length; i++) {
-    const connection = connections[i];
-    if (nodes[connection.filePath]) {
-      const proposedPosition = {
-        x: nodes[connection.filePath].position.x - 200,
-        y: 0,
-      };
+  function traverseConnections(
+    graphNode: GraphNode,
+    connections: Connection[],
+  ) {
+    for (const connection of connections) {
+      const { connectionId } = connection;
+      const fileNode = graph[connectionId];
+      const [filePath, functionName] = connectionId.split("#");
 
-      return checkPosition(proposedPosition);
+      if (!getNodeById(connectionId))
+        nodes[filePath] = {
+          position: { x: 0, y: 0 },
+          functions: { [functionName]: fileNode.in },
+        };
+
+      positionDownstreamNode(graphNode, connection.connectionId);
+      traverseConnections(getNodeById(connectionId), fileNode.in);
     }
   }
-
-  return null;
 }
 
-function checkPosition(proposedPosition: Vector) {
-  console.log("checking position", proposedPosition);
-  console.log(positions);
-  if (positions.has(`${proposedPosition.x},${proposedPosition.y}`)) {
-    console.log("position exists");
-    proposedPosition.y += 100;
-    checkPosition(proposedPosition);
+function positionDownstreamNode(
+  upstreamNode: GraphNode,
+  downstreamConnectionId: string,
+) {
+  const downstreamNode = getNodeById(downstreamConnectionId);
+
+  if (!downstreamNode) {
+    const [filePath] = downstreamConnectionId.split("#");
+    nodes[filePath] = {
+      position: { x: upstreamNode.position.x + NODE_SPACING, y: 0 },
+      functions: {},
+    };
+    return;
   }
-  positions.add(`${proposedPosition.x},${proposedPosition.y}`);
-  return proposedPosition;
+
+  if (upstreamNode.position.x + NODE_SPACING < downstreamNode.position.x)
+    return;
+
+  downstreamNode.position.x = upstreamNode.position.x + NODE_SPACING;
 }

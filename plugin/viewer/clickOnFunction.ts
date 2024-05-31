@@ -1,4 +1,6 @@
-import { Mouse, ctx, functionPositions, state } from ".";
+import { Mouse, ctx, functionPositions, higlightedConnections, state } from ".";
+import { Connection } from "../types";
+import { getFunctionById } from "./getNodes";
 
 export function clickOnFunction(event: MouseEvent): boolean {
   if (
@@ -18,10 +20,28 @@ export function clickOnFunction(event: MouseEvent): boolean {
       Mouse.canvasPosition.y > functionPosition.start.y &&
       Mouse.canvasPosition.y < functionPosition.end.y
     ) {
-      console.log(functionName);
+      higlightedConnections.clear();
+
+      addConnectionHighlights(functionName);
+
       return true;
     }
   }
 
   return false;
+}
+
+function addConnectionHighlights(connectionId: string) {
+  const functionConnections = getFunctionById(connectionId);
+  functionConnections.forEach((functionConnection) => {
+    higlightedConnections.add(
+      `${connectionId}-${functionConnection.connectionId}`,
+    );
+    getFunctionById(functionConnection.connectionId).forEach((connection) => {
+      addConnectionHighlights(connection.connectionId),
+        higlightedConnections.add(
+          `${functionConnection.connectionId}-${connection.connectionId}`,
+        );
+    });
+  });
 }

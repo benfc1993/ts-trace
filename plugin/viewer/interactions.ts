@@ -6,7 +6,6 @@ window.addEventListener("resize", resize);
 
 export function addInteraction(canvas: HTMLCanvasElement) {
   canvas.addEventListener("click", (event) => {
-    console.log(Mouse.canvasPosition);
     if (clickOnFunction(event)) return;
     console.log("unhandled");
   });
