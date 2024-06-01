@@ -1,8 +1,8 @@
 import * as mod from "./another";
 
-export function chatty(msg: string) {
-  mod.testing(1);
-  mod.default(mod.testingNest(msg));
+export const chatty = async (msg: string) => {
+  await mod.testing(1);
+  const result = mod.default(mod.testingNest(msg));
   console.log("1");
-  return mod.testing(1);
-}
+  return await mod.testing(1).then((num) => num);
+};

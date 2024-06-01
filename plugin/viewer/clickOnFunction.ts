@@ -60,16 +60,18 @@ export function getHoveredFile() {
 }
 
 function addConnectionHighlights(connectionId: string) {
-  const functionConnections = getFunctionById(connectionId);
-  functionConnections.forEach((functionConnection) => {
+  const functionData = getFunctionById(connectionId);
+  functionData.connections.forEach((functionConnection) => {
     higlightedConnections.add(
       `${connectionId}-${functionConnection.connectionId}`,
     );
-    getFunctionById(functionConnection.connectionId).forEach((connection) => {
-      addConnectionHighlights(connection.connectionId),
-        higlightedConnections.add(
-          `${functionConnection.connectionId}-${connection.connectionId}`,
-        );
-    });
+    getFunctionById(functionConnection.connectionId).connections.forEach(
+      (connection) => {
+        addConnectionHighlights(connection.connectionId),
+          higlightedConnections.add(
+            `${functionConnection.connectionId}-${connection.connectionId}`,
+          );
+      },
+    );
   });
 }

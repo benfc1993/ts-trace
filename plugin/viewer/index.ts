@@ -98,7 +98,7 @@ function createConnections() {
   Object.entries(nodes).forEach(([filePath, node]) => {
     Object.entries(node.functions).forEach(([functionName, connections]) => {
       const functionPosition = functionPositions[filePath + "#" + functionName];
-      connections.forEach((connection) => {
+      connections.connections.forEach((connection) => {
         const externalFunctionPosition =
           functionPositions[connection.connectionId];
 
@@ -139,7 +139,7 @@ function draw() {
     );
   });
   Object.entries(nodes).forEach(([file, node]) => {
-    drawFile(file, Object.keys(node.functions), node.position);
+    drawFile(file, node);
   });
 
   const defered: typeof connectionLines = [];

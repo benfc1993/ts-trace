@@ -1,5 +1,5 @@
 import { testing } from "./another";
 
-function test() {
+const test = () => {
   testing(98);
-}
+};

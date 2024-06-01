@@ -1,4 +1,5 @@
 import { containedStyles, ctx } from ".";
+import { GraphNode } from "./parseGraph";
 import { Vector } from "./types";
 
 export const NODE_LINE_HEIGHT = 25;
@@ -6,22 +7,19 @@ export const NODE_BORDER_WIDTH = 2;
 export const NODE_WIDTH = 200;
 export const NODE_BOX_WIDTH = NODE_WIDTH + NODE_BORDER_WIDTH;
 export const NODE_PADDING = 5;
-export const NODE_SPACING = NODE_WIDTH * 2;
+export const NODE_SPACING = 100;
 
 let hoveredFunction: string | null = null;
 export function setHoveredFunction(connectionId: string | null) {
   hoveredFunction = connectionId;
 }
 
-export function drawFile(
-  fileName: string,
-  functions: string[],
-  position: Vector,
-) {
+export function drawFile(fileName: string, graphNode: GraphNode) {
+  const { position, functions } = graphNode;
+  const functionCount = Object.keys(functions).length;
+
   const NODE_PADDING = 5;
-  const adjustedFileName = fileName.includes("node_modules")
-    ? fileName.split("/").slice(1, 3).join("/")
-    : fileName;
+  const adjustedFileName = adjustFileName(fileName);
   containedStyles(() => {
     ctx.fillStyle = "#555";
     ctx.strokeStyle = "#f2f2f2";
@@ -30,13 +28,13 @@ export function drawFile(
       position.x,
       position.y,
       NODE_WIDTH,
-      NODE_LINE_HEIGHT + NODE_LINE_HEIGHT * functions.length,
+      NODE_LINE_HEIGHT + NODE_LINE_HEIGHT * functionCount,
     );
     ctx.strokeRect(
       position.x,
       position.y,
       NODE_WIDTH,
-      NODE_LINE_HEIGHT + NODE_LINE_HEIGHT * functions.length,
+      NODE_LINE_HEIGHT + NODE_LINE_HEIGHT * functionCount,
     );
     ctx.fillStyle = "#f2f2f2";
     ctx.font = "12px roboto-mono";
@@ -46,10 +44,11 @@ export function drawFile(
       position.y + NODE_LINE_HEIGHT / 2 + NODE_PADDING,
       NODE_WIDTH - NODE_PADDING * 2,
     );
-    functions.forEach((functionName, i) => {
+    Object.entries(functions).forEach(([functionName, functionDetails], i) => {
       drawFunction(
         `${fileName}#${functionName}`,
         functionName,
+        functionDetails.exported,
         { x: position.x, y: position.y + NODE_LINE_HEIGHT * (i + 1) },
         NODE_WIDTH,
         NODE_LINE_HEIGHT,
@@ -61,6 +60,7 @@ export function drawFile(
 function drawFunction(
   connectionId: string,
   functionName: string,
+  exported: boolean,
   position: Vector,
   width: number,
   height: number,
@@ -71,7 +71,7 @@ function drawFunction(
     ctx.fillRect(position.x + 1, position.y, width - 2, height);
     ctx.fillStyle = "#f2f2f2";
     ctx.fillText(
-      functionName,
+      (exported ? "E " : "") + functionName,
       position.x + NODE_PADDING * 2,
       position.y + height / 2 + 5,
       width - NODE_PADDING * 2,
@@ -101,4 +101,15 @@ function drawFunction(
     ctx.closePath();
     ctx.fill();
   });
+}
+function adjustFileName(fileName: string) {
+  const parts = fileName.split("/");
+  const nodeModulesIndex = parts.indexOf("node_modules");
+  if (nodeModulesIndex < 0) return fileName;
+  const set = new Set(parts);
+  set.delete("@types");
+
+  return Array.from(set)
+    .slice(nodeModulesIndex, nodeModulesIndex + 2)
+    .join("/");
 }

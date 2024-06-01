@@ -5,6 +5,11 @@ export type ExternalTrace = {
   lineNumber: number;
 };
 
-export type Connection = ExternalTrace & { connectionId: string };
+export type Connection = ExternalTrace & {
+  connectionId: string;
+};
 
-export type FileNodes = Record<string, { out: string[]; in: Connection[] }>;
+export type FileNodes = Record<
+  string,
+  { exported: boolean; out: string[]; in: Connection[] }
+>;
