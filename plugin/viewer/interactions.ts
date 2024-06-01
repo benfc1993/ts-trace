@@ -1,5 +1,10 @@
 import { Mouse, ctx, resize, state } from ".";
-import { clickOnFunction } from "./clickOnFunction";
+import {
+  clickOnFunction,
+  getHoveredFile,
+  getHoveredFunction,
+} from "./clickOnFunction";
+import { setHoveredFunction } from "./drawFile";
 import { Vector } from "./types";
 
 window.addEventListener("resize", resize);
@@ -11,18 +16,38 @@ export function addInteraction(canvas: HTMLCanvasElement) {
   });
 
   canvas.addEventListener("mousedown", (event) => {
-    state.dragging = true;
     state.dragstart.x = event.pageX - canvas.offsetLeft;
     state.dragstart.y = event.pageY - canvas.offsetTop;
     state.lastClick.x = state.dragstart.x;
     state.lastClick.y = state.dragstart.y;
+    if (state.draggingBlocked) return;
+    state.dragging = true;
   });
 
   canvas.addEventListener("mousemove", (event) => {
+    document.querySelector("body")!.style.cursor = "grab";
     Mouse.x = event.pageX - canvas.offsetLeft;
     Mouse.y = event.pageY - canvas.offsetTop;
 
+    const hoveredFunction = getHoveredFunction();
+    setHoveredFunction(hoveredFunction);
+
+    if (hoveredFunction) {
+      state.draggingBlocked = true;
+      document.querySelector("body")!.style.cursor = "pointer";
+      return;
+    }
+
+    const hoveredFile = getHoveredFile();
+    if (hoveredFile) {
+      state.draggingBlocked = true;
+      document.querySelector("body")!.style.cursor = "move";
+      return;
+    }
+
+    state.draggingBlocked = false;
     if (!state.dragging) return;
+    document.querySelector("body")!.style.cursor = "grabbing";
 
     const dragend: Vector = {
       x: event.pageX - canvas.offsetLeft,

@@ -7,6 +7,7 @@ export type State = {
   lastClick: Vector;
   dragstart: Vector;
   dragging: boolean;
+  draggingBlocked: boolean;
   draggingTimeout: boolean;
   dragTimeout: NodeJS.Timeout | null;
   width: number;

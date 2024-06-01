@@ -1,12 +1,10 @@
+import { NODE_LINE_HEIGHT, NODE_WIDTH, drawFile } from "./drawFile";
 import { addInteraction } from "./interactions";
 import { GraphNodes, parseGraph } from "./parseGraph";
 import { State, Vector } from "./types";
 
-export const NODE_LINE_HEIGHT = 25;
-export const NODE_WIDTH = 100;
-export const NODE_SPACING = NODE_WIDTH * 2;
-const lineColor = `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})`;
-const highlightColor = "red";
+const lineColor = "#ffffff";
+const lineUnfocusedColor = "#3d3d3d";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 export const ctx = canvas.getContext("2d")!;
@@ -38,6 +36,12 @@ async function setup() {
   resize();
   createFunctionPositions();
   createConnections();
+  let font = new FontFace("roboto-mono", "url(fonts/roboto-mono.ttf)", {
+    style: "normal",
+    weight: "400",
+  });
+  await font.load().then((font) => document.fonts.add(font));
+
   draw();
 }
 
@@ -45,6 +49,7 @@ export const state: State = {
   lastClick: { x: 0, y: 0 },
   dragstart: { x: 0, y: 0 },
   dragging: false,
+  draggingBlocked: false,
   width: canvas.width,
   height: canvas.height,
   zoomIntensity: 0.1,
@@ -102,11 +107,11 @@ function createConnections() {
             filePath + "#" + functionName + "-" + connection.connectionId,
           start: {
             x: functionPosition.end.x,
-            y: functionPosition.start.y + NODE_LINE_HEIGHT / 2 - 2.5,
+            y: functionPosition.start.y + NODE_LINE_HEIGHT / 2,
           },
           end: {
             x: externalFunctionPosition.start.x,
-            y: externalFunctionPosition.start.y + NODE_LINE_HEIGHT / 2 - 2.5,
+            y: externalFunctionPosition.start.y + NODE_LINE_HEIGHT / 2,
           },
         });
       });
@@ -117,21 +122,43 @@ function createConnections() {
 function draw() {
   const visibleWidth = ctx.canvas.width / state.scale;
   const visibleHeight = ctx.canvas.height / state.scale;
+  ctx.font = "11px roboto-mono";
   ctx.clearRect(
     state.canvasOrigin.x,
     state.canvasOrigin.y,
     visibleWidth,
     visibleHeight,
   );
+  containedStyles(() => {
+    ctx.fillStyle = "#222";
+    ctx.fillRect(
+      state.canvasOrigin.x,
+      state.canvasOrigin.y,
+      visibleWidth,
+      visibleHeight,
+    );
+  });
   Object.entries(nodes).forEach(([file, node]) => {
     drawFile(file, Object.keys(node.functions), node.position);
   });
 
-  connectionLines.forEach(({ connection, start, end }) => {
+  const defered: typeof connectionLines = [];
+
+  for (const { connection, start, end } of connectionLines) {
+    if (higlightedConnections.has(connection)) {
+      defered.push({ connection, start, end });
+      continue;
+    }
     containedStyles(() => {
-      ctx.strokeStyle = higlightedConnections.has(connection)
-        ? highlightColor
-        : lineColor;
+      ctx.strokeStyle =
+        higlightedConnections.size === 0 ? lineColor : lineUnfocusedColor;
+      drawPath(start, end);
+    });
+  }
+
+  defered.forEach(({ start, end }) => {
+    containedStyles(() => {
+      ctx.strokeStyle = lineColor;
       drawPath(start, end);
     });
   });
@@ -140,90 +167,17 @@ function draw() {
 }
 
 function drawPath(from: Vector, to: Vector) {
-  ctx.beginPath();
-  ctx.moveTo(from.x, from.y);
-  ctx.lineTo(to.x, to.y);
-  ctx.stroke();
-  ctx.lineCap = "round";
-}
-
-function drawFile(fileName: string, functions: string[], position: Vector) {
-  const padding = 5;
-  const adjustedFileName = fileName.includes("node_modules")
-    ? fileName.split("/").slice(1, 3).join("/")
-    : fileName;
   containedStyles(() => {
-    ctx.fillStyle = "#555";
-    ctx.strokeStyle = "#f2f2f2";
     ctx.lineWidth = 2;
-    ctx.fillRect(
-      position.x,
-      position.y,
-      NODE_WIDTH,
-      NODE_LINE_HEIGHT + NODE_LINE_HEIGHT * functions.length + padding,
-    );
-    ctx.strokeRect(
-      position.x,
-      position.y,
-      NODE_WIDTH,
-      NODE_LINE_HEIGHT + NODE_LINE_HEIGHT * functions.length + padding,
-    );
-    ctx.fillStyle = "#f2f2f2";
-    ctx.fillText(
-      adjustedFileName,
-      position.x + padding,
-      position.y + NODE_LINE_HEIGHT / 2 + padding,
-      NODE_WIDTH - padding * 2,
-    );
-    functions.forEach((functionName, i) => {
-      drawFunction(
-        functionName,
-        { x: position.x + padding, y: position.y + NODE_LINE_HEIGHT * (i + 1) },
-        NODE_WIDTH - padding * 2,
-        NODE_LINE_HEIGHT,
-      );
-    });
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+    ctx.lineCap = "round";
   });
 }
 
-function drawFunction(
-  functionName: string,
-  position: Vector,
-  width: number,
-  height: number,
-) {
-  const radius = 3;
-  containedStyles(() => {
-    ctx.fillStyle = "#f2f2f2";
-    ctx.fillText(functionName, position.x, position.y + height / 2, width);
-    ctx.beginPath();
-    ctx.ellipse(
-      position.x + width + 5,
-      position.y + height / 2 - 2.5,
-      radius,
-      radius,
-      0,
-      0,
-      2 * Math.PI,
-    );
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(
-      position.x - 5,
-      position.y + height / 2 - 2.5,
-      radius,
-      radius,
-      0,
-      0,
-      2 * Math.PI,
-    );
-    ctx.closePath();
-    ctx.fill();
-  });
-}
-
-function containedStyles(func: () => void) {
+export function containedStyles(func: () => void) {
   const previousStyles = {
     fill: ctx.fillStyle,
     stroke: ctx.strokeStyle,

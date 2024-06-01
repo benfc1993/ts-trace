@@ -1,6 +1,7 @@
 import { Mouse, ctx, functionPositions, higlightedConnections, state } from ".";
-import { Connection } from "../types";
+import { NODE_BORDER_WIDTH, NODE_LINE_HEIGHT, NODE_WIDTH } from "./drawFile";
 import { getFunctionById } from "./getNodes";
+import { nodes } from "./parseGraph";
 
 export function clickOnFunction(event: MouseEvent): boolean {
   if (
@@ -9,6 +10,19 @@ export function clickOnFunction(event: MouseEvent): boolean {
   )
     return false;
 
+  const functionName = getHoveredFunction();
+  if (functionName) {
+    higlightedConnections.clear();
+
+    addConnectionHighlights(functionName);
+
+    return true;
+  }
+
+  return false;
+}
+
+export function getHoveredFunction(): string | null {
   const functionKeys = Object.keys(functionPositions);
 
   for (let i = 0; i < functionKeys.length; i++) {
@@ -20,15 +34,29 @@ export function clickOnFunction(event: MouseEvent): boolean {
       Mouse.canvasPosition.y > functionPosition.start.y &&
       Mouse.canvasPosition.y < functionPosition.end.y
     ) {
-      higlightedConnections.clear();
-
-      addConnectionHighlights(functionName);
-
-      return true;
+      return functionName;
     }
   }
+  return null;
+}
 
-  return false;
+export function getHoveredFile() {
+  const files = Object.entries(nodes);
+  for (let i = 0; i < files.length; i++) {
+    const [file, node] = files[i];
+    if (
+      Mouse.canvasPosition.y > node.position.y - NODE_BORDER_WIDTH &&
+      Mouse.canvasPosition.y <
+        node.position.y +
+          (Object.keys(node.functions).length + 1) * NODE_LINE_HEIGHT +
+          2 * NODE_BORDER_WIDTH &&
+      Mouse.canvasPosition.x > node.position.x - NODE_BORDER_WIDTH &&
+      Mouse.canvasPosition.x < node.position.x + NODE_WIDTH + NODE_BORDER_WIDTH
+    ) {
+      return file;
+    }
+  }
+  return null;
 }
 
 function addConnectionHighlights(connectionId: string) {

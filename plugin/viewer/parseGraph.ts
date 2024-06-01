@@ -1,8 +1,7 @@
-import { readFileSync } from "fs";
 import type { Connection, FileNodes } from "../types";
 import { Vector } from "./types";
-import { NODE_SPACING } from ".";
 import { getNodeById } from "./getNodes";
+import { NODE_SPACING } from "./drawFile";
 
 type GraphNode = { position: Vector; functions: Record<string, Connection[]> };
 
