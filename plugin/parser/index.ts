@@ -1,6 +1,6 @@
 import { cpSync, mkdirSync, rmSync } from "fs";
 import { createGraph } from "./generateNodes";
-import { createCallTraces } from "./morph-plugin";
+import { pathfinder } from "./pathfinder";
 import path from "path";
 import { argv } from "process";
 import { Config } from "./types";
@@ -16,10 +16,7 @@ export const config: Config = {
 rmSync(".pathfinder", { recursive: true, force: true });
 mkdirSync(".pathfinder");
 
-createCallTraces();
+pathfinder();
 createGraph();
 if (!config.debug) rmSync(path.join(__dirname, "out.json"));
 cpSync(path.join(__dirname, "./viewer"), ".pathfinder", { recursive: true });
-
-//TODO: awaits
-//TODO: exclude types / interfaces

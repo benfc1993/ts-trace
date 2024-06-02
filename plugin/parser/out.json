@@ -1,0 +1,184 @@
+{
+  "/project/src/another.ts": {
+    "traces": {
+      "_root": { "exported": false, "externalTraces": [] },
+      "testing": { "exported": true, "externalTraces": [] },
+      "testingNest": { "exported": true, "externalTraces": [] },
+      "testingNest2": { "exported": true, "externalTraces": [] }
+    },
+    "exports": ["testing", "testingNest", "testingNest2"],
+    "calledBy": {
+      "testing": [
+        "/project/src/index.ts#_root",
+        "/project/src/object.ts#_root",
+        "/project/src/object.ts#myObj.myMethod.o.",
+        "/project/src/otherFile.ts#_root",
+        "/project/src/otherFile.ts#myObj.myMethod.o.",
+        "/project/src/otherFile.ts#test",
+        "/project/src/somethingElse.ts#_root",
+        "/project/src/somethingElse.ts#chatty",
+        "/project/src/somethingElse.ts#chatty",
+        "/project/src/somethingElse.ts#myObj.myMethod.o.",
+        "/project/src/somethingElse.ts#test"
+      ],
+      "testingNest2": [
+        "/project/src/index.ts#_root",
+        "/project/src/index.ts#_root",
+        "/project/src/object.ts#_root",
+        "/project/src/object.ts#_root",
+        "/project/src/otherFile.ts#_root",
+        "/project/src/otherFile.ts#_root",
+        "/project/src/somethingElse.ts#_root",
+        "/project/src/somethingElse.ts#_root",
+        "/project/src/somethingElse.ts#chatty"
+      ],
+      "testingNest": ["/project/src/somethingElse.ts#chatty"]
+    }
+  },
+  "/project/src/class.ts": {
+    "traces": {
+      "_root": { "exported": false, "externalTraces": [] },
+      "MyClass.myMethod.c.": { "exported": true, "externalTraces": [] }
+    },
+    "exports": ["MyClass.myMethod.c."],
+    "calledBy": {
+      "MyClass.myMethod.c.": [
+        "/project/src/otherFile.ts#test",
+        "/project/src/somethingElse.ts#test"
+      ]
+    }
+  },
+  "/project/src/index.ts": {
+    "traces": {
+      "_root": {
+        "exported": false,
+        "externalTraces": [
+          {
+            "type": "function",
+            "externalName": "testing",
+            "internalName": "testing",
+            "lineNumber": 7,
+            "filePath": "/project/src/another.ts"
+          },
+          {
+            "type": "function",
+            "externalName": "chatty",
+            "internalName": "chatty",
+            "lineNumber": 8,
+            "filePath": "/project/src/somethingElse.ts"
+          },
+          {
+            "type": "function",
+            "externalName": "testingNest2",
+            "internalName": "b",
+            "lineNumber": 8,
+            "filePath": "/project/src/another.ts"
+          },
+          {
+            "type": "function",
+            "externalName": "testingNest2",
+            "internalName": "b",
+            "lineNumber": 9,
+            "filePath": "/project/src/another.ts"
+          }
+        ]
+      }
+    },
+    "exports": [],
+    "calledBy": {}
+  },
+  "/project/src/somethingElse.ts": {
+    "traces": {
+      "_root": { "exported": false, "externalTraces": [] },
+      "chatty": {
+        "exported": true,
+        "externalTraces": [
+          {
+            "type": "function",
+            "externalName": "testing",
+            "internalName": "testing",
+            "lineNumber": 4,
+            "filePath": "/project/src/another.ts"
+          },
+          {
+            "type": "function",
+            "externalName": "testingNest2",
+            "internalName": "default",
+            "lineNumber": 5,
+            "filePath": "/project/src/another.ts"
+          },
+          {
+            "type": "function",
+            "externalName": "testingNest",
+            "internalName": "testingNest",
+            "lineNumber": 5,
+            "filePath": "/project/src/another.ts"
+          },
+          {
+            "type": "function",
+            "externalName": "testing",
+            "internalName": "testing",
+            "lineNumber": 7,
+            "filePath": "/project/src/another.ts"
+          }
+        ]
+      }
+    },
+    "exports": ["chatty"],
+    "calledBy": {
+      "chatty": [
+        "/project/src/index.ts#_root",
+        "/project/src/object.ts#_root",
+        "/project/src/otherFile.ts#_root",
+        "/project/src/somethingElse.ts#_root"
+      ]
+    }
+  },
+  "/project/src/object.ts": {
+    "traces": {
+      "_root": { "exported": false, "externalTraces": [] },
+      "myObj.myMethod.o.": {
+        "exported": true,
+        "externalTraces": [
+          {
+            "type": "function",
+            "externalName": "testing",
+            "internalName": "testing",
+            "lineNumber": 5,
+            "filePath": "/project/src/another.ts"
+          }
+        ]
+      }
+    },
+    "exports": ["myObj.myMethod.o."],
+    "calledBy": {}
+  },
+  "/project/src/otherFile.ts": {
+    "traces": {
+      "_root": { "exported": false, "externalTraces": [] },
+      "test": {
+        "exported": false,
+        "externalTraces": [
+          {
+            "type": "function",
+            "externalName": "testing",
+            "internalName": "testing",
+            "lineNumber": 7,
+            "filePath": "/project/src/another.ts"
+          },
+          {
+            "type": "class",
+            "className": "MyClass",
+            "externalName": "myMethod",
+            "internalName": "myMethod",
+            "lineNumber": 7,
+            "filePath": "/project/src/class.ts"
+          }
+        ]
+      }
+    },
+    "exports": [],
+    "calledBy": {}
+  }
+}
+

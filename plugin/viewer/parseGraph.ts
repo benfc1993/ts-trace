@@ -23,7 +23,7 @@ export async function parseGraph() {
       const node = getNodeById(functionId);
       node.functions[functionName] = {
         exported: functionData.exported,
-        connections: functionData.in,
+        connections: functionData.out,
       };
       continue;
     }
@@ -33,14 +33,14 @@ export async function parseGraph() {
       functions: {
         [functionName]: {
           exported: functionData.exported,
-          connections: functionData.in,
+          connections: functionData.out,
         },
       },
     };
 
     nodes[filePath] = newNode;
 
-    traverseConnections(graph, newNode, functionData.in);
+    traverseConnections(graph, newNode, functionData.out);
   }
 
   Object.values(nodes).forEach((node) => {
@@ -60,21 +60,19 @@ function traverseConnections(
   for (const connection of connections) {
     const { connectionId } = connection;
     const fileNode = graph[connectionId];
-    const [filePath, functionName] = connectionId.split("#");
+    const [filePath, identifier] = connectionId.split("#");
 
-    if (!getNodeById(connectionId))
+    if (!getNodeById(connectionId)) {
       nodes[filePath] = {
         position: { x: 0, y: 0 },
-        functions: {
-          [functionName]: {
-            exported: fileNode.exported,
-            connections: fileNode.in,
-          },
-        },
+        functions: {},
       };
+      if (identifier.includes(".")) {
+      }
+    }
 
     positionDownstreamNode(graphNode, connection.connectionId);
-    traverseConnections(graph, getNodeById(connectionId), fileNode.in);
+    traverseConnections(graph, getNodeById(connectionId), fileNode.out);
   }
 }
 

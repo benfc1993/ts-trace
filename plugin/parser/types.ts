@@ -1,18 +1,20 @@
-import { ExternalTrace } from "../types";
+import { ClassTrace, FunctionTrace, ObjectTrace } from "../types";
 
-export type CallTrace = {
-  upstream: { [functionName: string]: string[] };
+export type Trace = FunctionTrace | ClassTrace | ObjectTrace;
+
+export type FileTraces = {
+  calledBy: { [functionName: string]: string[] };
   exports: string[];
-  functionCalls: {
+  traces: {
     [functionName: string]: {
-      externalTraces: ExternalTrace[];
+      externalTraces: Trace[];
       exported: boolean;
     };
   };
 };
 
-export type CallTraces = {
-  [sourceFile: string]: CallTrace;
+export type ApplicationTraces = {
+  [sourceFile: string]: FileTraces;
 };
 
 export type Config = {
