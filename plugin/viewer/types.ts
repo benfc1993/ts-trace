@@ -1,6 +1,7 @@
 export type Vector = {
   x: number;
   y: number;
+  lerp: (other: Vector, t: number) => Vector;
 };
 
 export type State = {
