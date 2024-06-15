@@ -1,19 +1,19 @@
-import { readFileSync, writeFileSync } from "fs";
-import type { ApplicationTraces } from "./types";
-import path from "path";
-import type { FileNodes } from "../types";
-import { createCallableName } from "./processors/traces/reverseTraces";
+import { readFileSync, writeFileSync } from 'fs'
+import type { ApplicationTraces } from './types'
+import path from 'path'
+import type { FileNodes } from '../types'
+import { createCallableName } from './processors/traces/reverseTraces'
 
-const nodes: FileNodes = {};
+const nodes: FileNodes = {}
 
 export function createGraph() {
   const traces: ApplicationTraces = JSON.parse(
-    readFileSync(path.join(__dirname, "out.json"), "utf-8"),
-  );
-  generateNodes(traces);
-  generateEdges(traces);
+    readFileSync(path.join(__dirname, 'out.json'), 'utf-8'),
+  )
+  generateNodes(traces)
+  generateEdges(traces)
 
-  writeFileSync(".pathfinder/graph.json", JSON.stringify(nodes));
+  writeFileSync('.pathfinder/graph.json', JSON.stringify(nodes))
 }
 
 //TODO: if function is not exported and doesn't make external calls exclude it
@@ -21,24 +21,24 @@ export function createGraph() {
 
 function generateNodes(traces: ApplicationTraces) {
   Object.entries(traces).map(([filePath, callTrace]) => {
-    [...Object.keys(callTrace.traces), ...callTrace.exports].forEach(
+    ;[...Object.keys(callTrace.traces), ...callTrace.exports].forEach(
       (trace) =>
         (nodes[`${filePath}#${trace}`] = {
           exported: callTrace.traces[trace]?.exported ?? false,
           in: [],
           out: [],
         }),
-    );
-  });
+    )
+  })
 }
 
 function generateEdges(applicationTraces: ApplicationTraces) {
   Object.entries(applicationTraces).forEach(([sourceFilePath, fileTrace]) => {
     Object.entries(fileTrace.traces).forEach(([functionName, callable]) => {
       callable.externalTraces.forEach((externalTrace) => {
-        const callableName = createCallableName(externalTrace);
-        const externalPath = `${externalTrace.filePath}#${callableName}`;
-        const externalCall = { connectionId: externalPath, ...externalTrace };
+        const callableName = createCallableName(externalTrace)
+        const externalPath = `${externalTrace.filePath}#${callableName}`
+        const externalCall = { connectionId: externalPath, ...externalTrace }
         if (!nodes[externalPath])
           nodes[externalPath] = {
             exported:
@@ -47,14 +47,22 @@ function generateEdges(applicationTraces: ApplicationTraces) {
               ]?.exported ?? false,
             in: [],
             out: [],
-          };
-        nodes[`${sourceFilePath}#${functionName}`].out.push(externalCall);
-      });
-    });
+          }
+        const id = `${sourceFilePath}#${functionName}`
+        if (
+          !nodes[id].out.find(
+            (connection) =>
+              connection.connectionId === externalCall.connectionId &&
+              connection.lineNumber === externalCall.lineNumber,
+          )
+        )
+          nodes[id].out.push(externalCall)
+      })
+    })
 
     Object.entries(fileTrace.calledBy).forEach(([functionName, calls]) => {
       calls.forEach((call) => {
-        const nodeKey = `${sourceFilePath}#${functionName}`;
+        const nodeKey = `${sourceFilePath}#${functionName}`
         if (!nodes[nodeKey])
           nodes[nodeKey] = {
             exported:
@@ -62,9 +70,9 @@ function generateEdges(applicationTraces: ApplicationTraces) {
                 ?.exported ?? false,
             in: [],
             out: [],
-          };
-        nodes[nodeKey].in.push(call);
-      });
-    });
-  });
+          }
+        if (!nodes[nodeKey].in.includes(call)) nodes[nodeKey].in.push(call)
+      })
+    })
+  })
 }

@@ -6,7 +6,10 @@ import { vector } from './math/createVector'
 
 export type GraphNode = {
   position: Vector
-  functions: Record<string, { connections: Connection[]; exported: boolean }>
+  functions: Record<
+    string,
+    { connectionsOut: Connection[]; connectionsIn: String[]; exported: boolean }
+  >
 }
 
 export type GraphNodes = Record<string, GraphNode>
@@ -24,7 +27,8 @@ export async function parseGraph() {
       const node = getNodeById(functionId)
       node.functions[functionName] = {
         exported: functionData.exported,
-        connections: functionData.out,
+        connectionsOut: functionData.out,
+        connectionsIn: functionData.in,
       }
       continue
     }
@@ -34,7 +38,8 @@ export async function parseGraph() {
       functions: {
         [functionName]: {
           exported: functionData.exported,
-          connections: functionData.out,
+          connectionsOut: functionData.out,
+          connectionsIn: Array.from(new Set(functionData.in)),
         },
       },
     }
@@ -42,11 +47,11 @@ export async function parseGraph() {
     nodes[filePath] = newNode
   }
 
-  const nodeArr = Object.values(nodes)
+  const nodeArr = Object.entries(nodes)
   for (let i = 0; i < nodeArr.length; i++) {
-    const node = nodeArr[i]
+    const [filePath, node] = nodeArr[i]
     Object.values(node.functions).forEach((func) =>
-      traverseConnections(graph, node, func.connections),
+      traverseConnections(filePath, graph, node, func.connectionsOut),
     )
   }
 
@@ -59,11 +64,11 @@ export async function parseGraph() {
       Object.keys(node.functions).length * NODE_LINE_HEIGHT +
       NODE_SPACING
   })
-  console.log(nodes)
   return nodes
 }
 
 function traverseConnections(
+  filePath: string,
   graph: FileNodes,
   graphNode: GraphNode,
   connections: Connection[],
@@ -71,10 +76,10 @@ function traverseConnections(
   for (const connection of connections) {
     const { connectionId } = connection
     const fileNode = graph[connectionId]
-    const [filePath, identifier] = connectionId.split('#')
-
+    const [connectionFilePath, identifier] = connectionId.split('#')
+    if (connectionFilePath === filePath) continue
     if (!getNodeById(connectionId)) {
-      nodes[filePath] = {
+      nodes[connectionFilePath] = {
         position: vector(),
         functions: {},
       }
@@ -83,7 +88,12 @@ function traverseConnections(
     }
 
     positionDownstreamNode(graphNode, connection.connectionId)
-    traverseConnections(graph, getNodeById(connectionId), fileNode.out)
+    traverseConnections(
+      connectionFilePath,
+      graph,
+      getNodeById(connectionId),
+      fileNode.out,
+    )
   }
 }
 

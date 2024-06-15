@@ -1,0 +1,191 @@
+[
+  {
+    "file": {
+      "traces": {
+        "_root": { "exported": false, "externalTraces": [] },
+        "testing": { "exported": true, "externalTraces": [] },
+        "testingNest": { "exported": true, "externalTraces": [] },
+        "testingNest2": { "exported": true, "externalTraces": [] }
+      },
+      "exports": ["testing", "testingNest", "testingNest2"],
+      "calledBy": {
+        "testing": ["/project/src/index.ts#_root"],
+        "testingNest2": [
+          "/project/src/index.ts#_root",
+          "/project/src/index.ts#_root"
+        ]
+      }
+    },
+    "traces": [
+      {
+        "type": "function",
+        "externalName": "testing",
+        "internalName": "testing",
+        "lineNumber": 7,
+        "filePath": "/project/src/another.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "chatty",
+        "internalName": "chatty",
+        "lineNumber": 8,
+        "filePath": "/project/src/somethingElse.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "testingNest2",
+        "internalName": "b",
+        "lineNumber": 8,
+        "filePath": "/project/src/another.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "testingNest2",
+        "internalName": "b",
+        "lineNumber": 9,
+        "filePath": "/project/src/another.ts"
+      }
+    ]
+  },
+  {
+    "file": {
+      "traces": {},
+      "exports": [],
+      "calledBy": { "chatty": ["/project/src/index.ts#_root"] }
+    },
+    "traces": [
+      {
+        "type": "function",
+        "externalName": "testing",
+        "internalName": "testing",
+        "lineNumber": 7,
+        "filePath": "/project/src/another.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "chatty",
+        "internalName": "chatty",
+        "lineNumber": 8,
+        "filePath": "/project/src/somethingElse.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "testingNest2",
+        "internalName": "b",
+        "lineNumber": 8,
+        "filePath": "/project/src/another.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "testingNest2",
+        "internalName": "b",
+        "lineNumber": 9,
+        "filePath": "/project/src/another.ts"
+      }
+    ]
+  },
+  {
+    "file": {
+      "traces": {
+        "_root": { "exported": false, "externalTraces": [] },
+        "testing": { "exported": true, "externalTraces": [] },
+        "testingNest": { "exported": true, "externalTraces": [] },
+        "testingNest2": { "exported": true, "externalTraces": [] }
+      },
+      "exports": ["testing", "testingNest", "testingNest2"],
+      "calledBy": {
+        "testing": [
+          "/project/src/index.ts#_root",
+          "/project/src/object.ts#_root"
+        ],
+        "testingNest2": [
+          "/project/src/index.ts#_root",
+          "/project/src/index.ts#_root"
+        ]
+      }
+    },
+    "traces": [
+      {
+        "type": "function",
+        "externalName": "testing",
+        "internalName": "testing",
+        "lineNumber": 7,
+        "filePath": "/project/src/another.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "chatty",
+        "internalName": "chatty",
+        "lineNumber": 8,
+        "filePath": "/project/src/somethingElse.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "testingNest2",
+        "internalName": "b",
+        "lineNumber": 8,
+        "filePath": "/project/src/another.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "testingNest2",
+        "internalName": "b",
+        "lineNumber": 9,
+        "filePath": "/project/src/another.ts"
+      }
+    ]
+  },
+  {
+    "file": {
+      "traces": {
+        "_root": { "exported": false, "externalTraces": [] },
+        "testing": { "exported": true, "externalTraces": [] },
+        "testingNest": { "exported": true, "externalTraces": [] },
+        "testingNest2": { "exported": true, "externalTraces": [] }
+      },
+      "exports": ["testing", "testingNest", "testingNest2"],
+      "calledBy": {
+        "testing": [
+          "/project/src/index.ts#_root",
+          "/project/src/object.ts#_root"
+        ],
+        "testingNest2": [
+          "/project/src/index.ts#_root",
+          "/project/src/index.ts#_root",
+          "/project/src/object.ts#_root"
+        ]
+      }
+    },
+    "traces": [
+      {
+        "type": "function",
+        "externalName": "testing",
+        "internalName": "testing",
+        "lineNumber": 7,
+        "filePath": "/project/src/another.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "chatty",
+        "internalName": "chatty",
+        "lineNumber": 8,
+        "filePath": "/project/src/somethingElse.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "testingNest2",
+        "internalName": "b",
+        "lineNumber": 8,
+        "filePath": "/project/src/another.ts"
+      },
+      {
+        "type": "function",
+        "externalName": "testingNest2",
+        "internalName": "b",
+        "lineNumber": 9,
+        "filePath": "/project/src/another.ts"
+      }
+    ]
+  }
+]
+

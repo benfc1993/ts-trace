@@ -1,11 +1,8 @@
 import { bezier } from './components/bezier'
-import {
-  HALF_NODE_SPACING,
-  NODE_LINE_HEIGHT,
-  NODE_SPACING,
-  NODE_WIDTH,
-  drawFile,
-} from './drawFile'
+import { containedStyles } from './components/containedStyles'
+import { connectionLines, createConnections } from './connections'
+import { NODE_SPACING, drawFile } from './drawFile'
+import { createFunctionPositions } from './functions'
 import { addInteraction } from './interactions'
 import { vector } from './math/createVector'
 import { GraphNodes, parseGraph } from './parseGraph'
@@ -34,7 +31,6 @@ export function resize() {
 }
 
 let nodes: GraphNodes = {}
-const connectionLines: { connection: string; start: Vector; end: Vector }[] = []
 export const higlightedConnections: Set<string> = new Set()
 
 async function setup() {
@@ -43,6 +39,7 @@ async function setup() {
   resize()
   createFunctionPositions()
   createConnections()
+  console.log(connectionLines)
   let font = new FontFace('roboto-mono', 'url(fonts/roboto-mono.ttf)', {
     style: 'normal',
     weight: '400',
@@ -57,6 +54,7 @@ export const state: State = {
   dragstart: vector(),
   dragging: false,
   draggingBlocked: false,
+  draggedFileNode: null,
   width: canvas.width,
   height: canvas.height,
   zoomIntensity: 0.1,
@@ -79,53 +77,10 @@ export const Mouse = {
   },
 }
 
-export const functionPositions: Record<string, { start: Vector; end: Vector }> =
-  {}
-
-function createFunctionPositions() {
-  Object.entries(nodes).forEach(([file, node]) => {
-    Object.keys(node.functions).forEach((functionName, idx) => {
-      const functionId = file + '#' + functionName
-      const height = NODE_LINE_HEIGHT * (idx + 1)
-      functionPositions[functionId] = {
-        start: vector(node.position.x, node.position.y + height),
-        end: vector(
-          node.position.x + NODE_WIDTH,
-          node.position.y + height + NODE_LINE_HEIGHT,
-        ),
-      }
-    })
-  })
-}
-
-function createConnections() {
-  Object.entries(nodes).forEach(([filePath, node]) => {
-    Object.entries(node.functions).forEach(([functionName, connections]) => {
-      const functionPosition = functionPositions[filePath + '#' + functionName]
-      connections.connections.forEach((connection) => {
-        const externalFunctionPosition =
-          functionPositions[connection.connectionId]
-
-        connectionLines.push({
-          connection:
-            filePath + '#' + functionName + '-' + connection.connectionId,
-          start: vector(
-            functionPosition.end.x,
-            functionPosition.start.y + NODE_LINE_HEIGHT / 2,
-          ),
-          end: vector(
-            externalFunctionPosition.start.x,
-            externalFunctionPosition.start.y + NODE_LINE_HEIGHT / 2,
-          ),
-        })
-      })
-    })
-  })
-}
-
 function draw() {
   const visibleWidth = ctx.canvas.width / state.scale
   const visibleHeight = ctx.canvas.height / state.scale
+
   ctx.font = '11px roboto-mono'
   ctx.clearRect(
     state.canvasOrigin.x,
@@ -143,11 +98,11 @@ function draw() {
     )
   })
 
-  const defered: typeof connectionLines = []
+  const defered: { start: Vector; end: Vector }[] = []
 
-  for (const { connection, start, end } of connectionLines) {
+  for (const [connection, { start, end }] of Object.entries(connectionLines)) {
     if (higlightedConnections.has(connection)) {
-      defered.push({ connection, start, end })
+      defered.push({ start, end })
       continue
     }
     containedStyles(() => {
@@ -180,29 +135,6 @@ function draw() {
   })
 
   requestAnimationFrame(() => draw())
-}
-
-function drawPath(from: Vector, to: Vector) {
-  containedStyles(() => {
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(from.x, from.y)
-    ctx.lineTo(to.x, to.y)
-    ctx.stroke()
-    ctx.lineCap = 'round'
-  })
-}
-
-export function containedStyles(func: () => void) {
-  const previousStyles = {
-    fill: ctx.fillStyle,
-    stroke: ctx.strokeStyle,
-    lineWidth: ctx.lineWidth,
-  }
-  func()
-  ctx.strokeStyle = previousStyles.stroke
-  ctx.fillStyle = previousStyles.fill
-  ctx.lineWidth = previousStyles.lineWidth
 }
 
 setup()

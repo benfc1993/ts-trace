@@ -1,4 +1,5 @@
-import { containedStyles, ctx } from '.'
+import { ctx } from '.'
+import { containedStyles } from './components/containedStyles'
 import { vector } from './math/createVector'
 import { GraphNode } from './parseGraph'
 import { Vector } from './types'

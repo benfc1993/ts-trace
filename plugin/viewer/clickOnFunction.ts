@@ -1,49 +1,50 @@
-import { Mouse, ctx, functionPositions, higlightedConnections, state } from ".";
-import { NODE_BORDER_WIDTH, NODE_LINE_HEIGHT, NODE_WIDTH } from "./drawFile";
-import { getFunctionById } from "./getNodes";
-import { nodes } from "./parseGraph";
+import { Mouse, ctx, higlightedConnections, state } from '.'
+import { NODE_BORDER_WIDTH, NODE_LINE_HEIGHT, NODE_WIDTH } from './drawFile'
+import { functionPositions } from './functions'
+import { getFunctionById } from './getNodes'
+import { nodes } from './parseGraph'
 
 export function clickOnFunction(event: MouseEvent): boolean {
   if (
     state.lastClick.x !== event.pageX - ctx.canvas.offsetLeft &&
     state.lastClick.y !== event.pageY - ctx.canvas.offsetTop
   )
-    return false;
+    return false
 
-  const functionName = getHoveredFunction();
+  const functionName = getHoveredFunction()
   if (functionName) {
-    higlightedConnections.clear();
+    higlightedConnections.clear()
 
-    addConnectionHighlights(functionName);
+    addConnectionHighlights(functionName)
 
-    return true;
+    return true
   }
 
-  return false;
+  return false
 }
 
 export function getHoveredFunction(): string | null {
-  const functionKeys = Object.keys(functionPositions);
+  const functionKeys = Object.keys(functionPositions)
 
   for (let i = 0; i < functionKeys.length; i++) {
     const [functionName, functionPosition] =
-      Object.entries(functionPositions)[i];
+      Object.entries(functionPositions)[i]
     if (
       Mouse.canvasPosition.x > functionPosition.start.x &&
       Mouse.canvasPosition.x < functionPosition.end.x &&
       Mouse.canvasPosition.y > functionPosition.start.y &&
       Mouse.canvasPosition.y < functionPosition.end.y
     ) {
-      return functionName;
+      return functionName
     }
   }
-  return null;
+  return null
 }
 
 export function getHoveredFile() {
-  const files = Object.entries(nodes);
+  const files = Object.entries(nodes)
   for (let i = 0; i < files.length; i++) {
-    const [file, node] = files[i];
+    const [file, node] = files[i]
     if (
       Mouse.canvasPosition.y > node.position.y - NODE_BORDER_WIDTH &&
       Mouse.canvasPosition.y <
@@ -53,25 +54,25 @@ export function getHoveredFile() {
       Mouse.canvasPosition.x > node.position.x - NODE_BORDER_WIDTH &&
       Mouse.canvasPosition.x < node.position.x + NODE_WIDTH + NODE_BORDER_WIDTH
     ) {
-      return file;
+      return file
     }
   }
-  return null;
+  return null
 }
 
 function addConnectionHighlights(connectionId: string) {
-  const functionData = getFunctionById(connectionId);
-  functionData.connections.forEach((functionConnection) => {
+  const functionData = getFunctionById(connectionId)
+  functionData.connectionsOut.forEach((functionConnection) => {
     higlightedConnections.add(
       `${connectionId}-${functionConnection.connectionId}`,
-    );
-    getFunctionById(functionConnection.connectionId).connections.forEach(
+    )
+    getFunctionById(functionConnection.connectionId).connectionsOut.forEach(
       (connection) => {
         addConnectionHighlights(connection.connectionId),
           higlightedConnections.add(
             `${functionConnection.connectionId}-${connection.connectionId}`,
-          );
+          )
       },
-    );
-  });
+    )
+  })
 }
