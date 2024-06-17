@@ -5,19 +5,19 @@ import {
   SyntaxKind,
   Node,
   MethodDeclaration,
-} from "ts-morph";
-import { calls, pathPointer } from "../pathfinder";
-import { addFunctionTraces } from "./traces/addFunctionTraces";
+} from 'ts-morph'
+import { calls, pathPointer } from '../pathfinder'
+import { addFunctionTraces } from './traces/addFunctionTraces'
 
 export function getDeclaredFunctions(sourceFile: SourceFile) {
   for (const functionDec of sourceFile.getFunctions()) {
-    const functionName = functionDec.getName() ?? "";
-    pathPointer.functionName = functionName;
-    pathPointer.functionIsExported = functionDec.isExported();
+    const functionName = functionDec.getName() ?? ''
+    pathPointer.functionName = functionName
+    pathPointer.functionIsExported = functionDec.isExported()
 
-    const functionBodyCalls = processFunctionBody(functionDec);
+    const functionBodyCalls = processFunctionBody(functionDec)
 
-    if (functionBodyCalls) addFunctionTraces(functionBodyCalls);
+    if (functionBodyCalls) addFunctionTraces(functionBodyCalls)
   }
 }
 
@@ -25,16 +25,16 @@ export function getDeclaredArrowFunctions(sourceFile: SourceFile) {
   for (const variableDec of sourceFile.getVariableDeclarations()) {
     const arrowFunctionBody = variableDec.getFirstChildByKind(
       SyntaxKind.ArrowFunction,
-    );
+    )
 
-    if (!arrowFunctionBody) continue;
+    if (!arrowFunctionBody) continue
 
-    const functionName = variableDec.getName() ?? "";
-    pathPointer.functionName = functionName;
-    pathPointer.functionIsExported = variableDec.isExported();
+    const functionName = variableDec.getName() ?? ''
+    pathPointer.functionName = functionName
+    pathPointer.functionIsExported = variableDec.isExported()
 
-    const functionBodyCalls = processFunctionBody(arrowFunctionBody);
-    if (functionBodyCalls) addFunctionTraces(functionBodyCalls);
+    const functionBodyCalls = processFunctionBody(arrowFunctionBody)
+    if (functionBodyCalls) addFunctionTraces(functionBodyCalls)
   }
 }
 
@@ -43,15 +43,15 @@ export function getDeclaredObjectMethods(sourceFile: SourceFile) {
     objectDeclaration
       .getDescendantsOfKind(SyntaxKind.MethodDeclaration)
       .map((method) => {
-        const objectName = objectDeclaration.getName();
-        const methodName = method.getName();
-        pathPointer.functionName = `${objectName}.${methodName}.o.`;
-        pathPointer.functionIsExported = objectDeclaration.isExported();
+        const objectName = objectDeclaration.getName()
+        const methodName = method.getName()
+        pathPointer.functionName = `${objectName}.${methodName}.o.`
+        pathPointer.functionIsExported = objectDeclaration.isExported()
 
-        const functionBodyCalls = processFunctionBody(method);
-        if (functionBodyCalls) addFunctionTraces(functionBodyCalls);
+        const functionBodyCalls = processFunctionBody(method)
+        if (functionBodyCalls) addFunctionTraces(functionBodyCalls)
       }),
-  );
+  )
 }
 
 export function getDeclaredClassMethods(sourceFile: SourceFile) {
@@ -61,27 +61,27 @@ export function getDeclaredClassMethods(sourceFile: SourceFile) {
       classDeclaration
         .getDescendantsOfKind(SyntaxKind.MethodDeclaration)
         .map((method) => {
-          const className = classDeclaration.getName();
-          const methodName = method.getName();
-          pathPointer.functionName = `${className}.${methodName}.c.`;
-          pathPointer.functionIsExported = classDeclaration.isExported();
+          const className = classDeclaration.getName()
+          const methodName = method.getName()
+          pathPointer.functionName = `${className}.${methodName}.c.`
+          pathPointer.functionIsExported = classDeclaration.isExported()
 
-          const functionBodyCalls = processFunctionBody(method);
-          if (functionBodyCalls) addFunctionTraces(functionBodyCalls);
+          const functionBodyCalls = processFunctionBody(method)
+          if (functionBodyCalls) addFunctionTraces(functionBodyCalls)
         }),
-    );
+    )
 }
 
 function processFunctionBody(
   func: ArrowFunction | FunctionDeclaration | MethodDeclaration,
 ) {
-  const funcBody = func.getBody();
-  if (!funcBody) return;
+  const funcBody = func.getBody()
+  if (!funcBody) return
 
-  createFunctionTrace();
+  createFunctionTrace()
 
-  const functionCalls = getAllCallExpressionDecendants(funcBody);
-  return functionCalls;
+  const functionCalls = getAllCallExpressionDecendants(funcBody)
+  return functionCalls
 }
 
 function getAllCallExpressionDecendants(body: Node) {
@@ -89,19 +89,20 @@ function getAllCallExpressionDecendants(body: Node) {
     SyntaxKind.ExpressionStatement,
     SyntaxKind.VariableStatement,
     SyntaxKind.ReturnStatement,
-  ];
+  ]
   return descendantTypes
     .flatMap((descendantType) => body.getDescendantsOfKind(descendantType))
-    .flatMap((desc) => desc?.getDescendantsOfKind(SyntaxKind.CallExpression));
+    .flatMap((desc) => desc?.getDescendantsOfKind(SyntaxKind.CallExpression))
 }
 
 export function createFunctionTrace() {
   if (!calls[pathPointer.filePath].traces[pathPointer.functionName])
     calls[pathPointer.filePath].traces[pathPointer.functionName] = {
+      functionName: pathPointer.functionName,
       exported: false,
       externalTraces: [],
-    };
+    }
 
   calls[pathPointer.filePath].traces[pathPointer.functionName].exported =
-    pathPointer.functionIsExported;
+    pathPointer.functionIsExported
 }

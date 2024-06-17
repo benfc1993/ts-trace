@@ -24,7 +24,7 @@ export function drawFile(fileName: string, graphNode: GraphNode) {
   const NODE_PADDING = 5
   const adjustedFileName = adjustFileName(fileName)
   containedStyles(() => {
-    ctx.fillStyle = '#555'
+    ctx.fillStyle = `#${graphNode.islandIndex}${graphNode.islandIndex}${graphNode.islandIndex}`
     ctx.strokeStyle = '#f2f2f2'
     ctx.lineWidth = NODE_BORDER_WIDTH
     ctx.fillRect(

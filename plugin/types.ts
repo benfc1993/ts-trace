@@ -23,7 +23,14 @@ export type Connection = ExternalTrace & {
   connectionId: string
 }
 
-export type FileNodes = Record<
-  string,
-  { exported: boolean; in: string[]; out: Connection[] }
->
+export type FileNodes = {
+  [functionPath: string]: FileNode
+}
+
+export type FileNode = {
+  filePath: string
+  exported: boolean
+  in: string[]
+  out: Connection[]
+  islandIndex: number
+}

@@ -1,25 +1,26 @@
-import { ClassTrace, FunctionTrace, ObjectTrace } from "../types";
+import { ClassTrace, FunctionTrace, ObjectTrace } from '../types'
 
-export type Trace = FunctionTrace | ClassTrace | ObjectTrace;
+export type Trace = FunctionTrace | ClassTrace | ObjectTrace
 
 export type FileTraces = {
-  calledBy: { [functionName: string]: string[] };
-  exports: string[];
+  calledBy: { [functionName: string]: string[] }
+  exports: string[]
   traces: {
     [functionName: string]: {
-      externalTraces: Trace[];
-      exported: boolean;
-    };
-  };
-};
+      functionName: string
+      externalTraces: Trace[]
+      exported: boolean
+    }
+  }
+}
 
 export type ApplicationTraces = {
-  [sourceFile: string]: FileTraces;
-};
+  [sourceFile: string]: FileTraces
+}
 
 export type Config = {
-  debug: boolean;
-  includeNodeModules: boolean;
-  includeInternalCalls: boolean;
-  tsconfigPath: string;
-};
+  debug: boolean
+  includeNodeModules: boolean
+  includeInternalCalls: boolean
+  tsconfigPath: string
+}

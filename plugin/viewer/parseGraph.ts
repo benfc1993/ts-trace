@@ -5,6 +5,7 @@ import { NODE_LINE_HEIGHT, NODE_SPACING, NODE_WIDTH } from './drawFile'
 import { vector } from './math/createVector'
 
 export type GraphNode = {
+  islandIndex: number
   position: Vector
   functions: Record<
     string,
@@ -19,45 +20,50 @@ const positions: Record<number, number> = {}
 
 export async function parseGraph() {
   const graph = await fetch('graph.json').then((res) => res.json())
-  const entries = Object.entries(graph as FileNodes)
+  const islands: FileNodes[] = Object.values(graph)
 
-  for (const [functionId, functionData] of entries) {
-    const [filePath, functionName] = functionId.split('#')
-    if (getNodeById(functionId)) {
-      const node = getNodeById(functionId)
-      node.functions[functionName] = {
-        exported: functionData.exported,
-        connectionsOut: functionData.out,
-        connectionsIn: functionData.in,
-      }
-      continue
-    }
+  islands.forEach((island) => {
+    const islandNodes: GraphNodes = {}
+    const entries = Object.entries(island as FileNodes)
 
-    const newNode: GraphNode = {
-      position: vector(),
-      functions: {
-        [functionName]: {
+    for (const [functionId, functionData] of entries) {
+      const [filePath, functionName] = functionId.split('#')
+      if (getNodeById(functionId)) {
+        const node = getNodeById(functionId)
+        node.functions[functionName] = {
           exported: functionData.exported,
           connectionsOut: functionData.out,
-          connectionsIn: Array.from(new Set(functionData.in)),
+          connectionsIn: functionData.in,
+        }
+        continue
+      }
+
+      const newNode: GraphNode = {
+        islandIndex: functionData.islandIndex,
+        position: vector(),
+        functions: {
+          [functionName]: {
+            exported: functionData.exported,
+            connectionsOut: functionData.out,
+            connectionsIn: Array.from(new Set(functionData.in)),
+          },
         },
-      },
+      }
+
+      nodes[filePath] = newNode
+      islandNodes[filePath] = newNode
     }
+    const nodeArr = Object.entries(islandNodes)
+    for (let i = 0; i < nodeArr.length; i++) {
+      const [, node] = nodeArr[i]
+      Object.values(node.functions).forEach((func) =>
+        traverseConnections(island, node, func.connectionsOut),
+      )
+    }
+  })
 
-    nodes[filePath] = newNode
-  }
-
-  const nodeArr = Object.entries(nodes)
-  for (let i = 0; i < nodeArr.length; i++) {
-    const [filePath, node] = nodeArr[i]
-    Object.values(node.functions).forEach((func) =>
-      traverseConnections(filePath, graph, node, func.connectionsOut),
-    )
-  }
-
-  Object.entries(nodes).forEach(([file, node]) => {
+  Object.entries(nodes).forEach(([, node]) => {
     const currentY = positions[node.position.x] ?? 0
-    console.log(file, node.position.x)
     node.position.y = currentY
     positions[node.position.x] =
       node.position.y +
@@ -68,7 +74,6 @@ export async function parseGraph() {
 }
 
 function traverseConnections(
-  filePath: string,
   graph: FileNodes,
   graphNode: GraphNode,
   connections: Connection[],
@@ -76,24 +81,9 @@ function traverseConnections(
   for (const connection of connections) {
     const { connectionId } = connection
     const fileNode = graph[connectionId]
-    const [connectionFilePath, identifier] = connectionId.split('#')
-    if (connectionFilePath === filePath) continue
-    if (!getNodeById(connectionId)) {
-      nodes[connectionFilePath] = {
-        position: vector(),
-        functions: {},
-      }
-      if (identifier.includes('.')) {
-      }
-    }
 
     positionDownstreamNode(graphNode, connection.connectionId)
-    traverseConnections(
-      connectionFilePath,
-      graph,
-      getNodeById(connectionId),
-      fileNode.out,
-    )
+    traverseConnections(graph, getNodeById(connectionId), fileNode.out)
   }
 }
 
@@ -107,6 +97,7 @@ function positionDownstreamNode(
   if (!downstreamNode) {
     const [filePath] = downstreamConnectionId.split('#')
     nodes[filePath] = {
+      islandIndex: 0,
       position: vector(upstreamNode.position.x + xSpacing, 0),
       functions: {},
     }
