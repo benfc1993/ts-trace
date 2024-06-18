@@ -3,10 +3,20 @@ import { Vector } from './types'
 import { getNodeById } from './getNodes'
 import { NODE_LINE_HEIGHT, NODE_SPACING, NODE_WIDTH } from './drawFile'
 import { vector } from './math/createVector'
+import {
+  addGroup,
+  addNodeToGroup,
+  getGroup,
+  moveGroup,
+  updateGroupBounds,
+} from './groups/groups'
+import { GROUP_PADDING } from './groups/calculateGroupBounds'
 
 export type GraphNode = {
-  islandIndex: number
+  groupId: string | null
   position: Vector
+  filePath: string
+  functionCount: number
   functions: Record<
     string,
     { connectionsOut: Connection[]; connectionsIn: String[]; exported: boolean }
@@ -20,11 +30,14 @@ const positions: Record<number, number> = {}
 
 export async function parseGraph() {
   const graph = await fetch('graph.json').then((res) => res.json())
-  const islands: FileNodes[] = Object.values(graph)
+  const islands: [string, FileNodes][] = Object.entries(graph)
+  let groupY = 0
 
-  islands.forEach((island) => {
+  islands.forEach(([islandIndex, iNodes]) => {
+    const groupId = `island-${islandIndex}`
     const islandNodes: GraphNodes = {}
-    const entries = Object.entries(island as FileNodes)
+    const entries = Object.entries(iNodes as FileNodes)
+    addGroup(groupId)
 
     for (const [functionId, functionData] of entries) {
       const [filePath, functionName] = functionId.split('#')
@@ -39,8 +52,10 @@ export async function parseGraph() {
       }
 
       const newNode: GraphNode = {
-        islandIndex: functionData.islandIndex,
+        groupId,
         position: vector(),
+        functionCount: 0,
+        filePath,
         functions: {
           [functionName]: {
             exported: functionData.exported,
@@ -52,24 +67,44 @@ export async function parseGraph() {
 
       nodes[filePath] = newNode
       islandNodes[filePath] = newNode
+      addNodeToGroup(groupId, newNode)
     }
+
     const nodeArr = Object.entries(islandNodes)
     for (let i = 0; i < nodeArr.length; i++) {
       const [, node] = nodeArr[i]
-      Object.values(node.functions).forEach((func) =>
-        traverseConnections(island, node, func.connectionsOut),
-      )
+      Object.values(node.functions).forEach((func) => {
+        node.functionCount = Object.keys(node.functions).length
+        traverseConnections(iNodes, node, func.connectionsOut)
+      })
     }
+    nodeArr.forEach(([, node]) => {
+      const currentY = positions[node.position.x] ?? 0
+      node.position.y = currentY
+      positions[node.position.x] =
+        node.position.y +
+        Object.keys(node.functions).length * NODE_LINE_HEIGHT +
+        NODE_SPACING
+    })
+    updateGroupBounds(groupId)
+    const group = getGroup(groupId)
+
+    groupY = Math.max(groupY, group.bounds.end.y)
+    Object.keys(positions).forEach(
+      (position) =>
+        (positions[Number(position)] = groupY + GROUP_PADDING + 100),
+    )
   })
 
-  Object.entries(nodes).forEach(([, node]) => {
-    const currentY = positions[node.position.x] ?? 0
-    node.position.y = currentY
-    positions[node.position.x] =
-      node.position.y +
-      Object.keys(node.functions).length * NODE_LINE_HEIGHT +
-      NODE_SPACING
-  })
+  // Object.entries(nodes).forEach(([, node]) => {
+  //   const currentY = positions[node.position.x] ?? 0
+  //   node.position.y = currentY
+  //   positions[node.position.x] =
+  //     node.position.y +
+  //     Object.keys(node.functions).length * NODE_LINE_HEIGHT +
+  //     NODE_SPACING
+  //   if (node.groupId) updateGroupBounds(node.groupId)
+  // })
   return nodes
 }
 
@@ -97,7 +132,9 @@ function positionDownstreamNode(
   if (!downstreamNode) {
     const [filePath] = downstreamConnectionId.split('#')
     nodes[filePath] = {
-      islandIndex: 0,
+      filePath,
+      functionCount: 0,
+      groupId: null,
       position: vector(upstreamNode.position.x + xSpacing, 0),
       functions: {},
     }

@@ -3,26 +3,18 @@ import { changeFunctionPositions } from './functions'
 import { GraphNode } from './parseGraph'
 import { Vector } from './types'
 
-export function dragFile(
-  file: {
-    filePath: string
-    node: GraphNode
-  },
-  move: Vector,
-) {
-  const { filePath, node } = file
-
+export function moveFile(node: GraphNode, move: Vector) {
   node.position.x += move.x
   node.position.y += move.y
 
   const seen = new Set<string>()
 
-  changeFunctionPositions(file.filePath, file.node)
+  changeFunctionPositions(node.filePath, node)
 
   Object.entries(node.functions).forEach(([funcName, data]) => {
     data.connectionsOut.forEach((connection) => {
       const connectionId =
-        filePath + '#' + funcName + '-' + connection.connectionId
+        node.filePath + '#' + funcName + '-' + connection.connectionId
       if (!seen.has(connectionId)) {
         modifyConnection(connectionId, { offset: { start: move } })
       }
@@ -30,10 +22,8 @@ export function dragFile(
     })
 
     data.connectionsIn.forEach((connection) => {
-      console.log({ connection })
-      const connectionId = connection + '-' + filePath + '#' + funcName
+      const connectionId = connection + '-' + node.filePath + '#' + funcName
       if (!seen.has(connectionId)) {
-        console.log({ connectionIn: connectionId })
         modifyConnection(connectionId, { offset: { end: move } })
       }
       seen.add(connectionId)

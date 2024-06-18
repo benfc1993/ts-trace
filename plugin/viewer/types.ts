@@ -7,13 +7,14 @@ export type Vector = {
 }
 
 export type State = {
+  draggedGroup: string | null
   lastClick: Vector
   dragstart: Vector
   dragging: boolean
   draggingBlocked: boolean
   draggingTimeout: boolean
   dragTimeout: NodeJS.Timeout | null
-  draggedFileNode: { filePath: string; node: GraphNode } | null
+  draggedFileNode: GraphNode | null
   width: number
   height: number
   zoomIntensity: number

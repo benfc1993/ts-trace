@@ -3,6 +3,7 @@ import { containedStyles } from './components/containedStyles'
 import { connectionLines, createConnections } from './connections'
 import { NODE_SPACING, drawFile } from './drawFile'
 import { createFunctionPositions } from './functions'
+import { drawGroups } from './groups/groups'
 import { addInteraction } from './interactions'
 import { vector } from './math/createVector'
 import { GraphNodes, parseGraph } from './parseGraph'
@@ -39,7 +40,7 @@ async function setup() {
   resize()
   createFunctionPositions()
   createConnections()
-  console.log(connectionLines)
+
   let font = new FontFace('roboto-mono', 'url(fonts/roboto-mono.ttf)', {
     style: 'normal',
     weight: '400',
@@ -54,6 +55,7 @@ export const state: State = {
   dragstart: vector(),
   dragging: false,
   draggingBlocked: false,
+  draggedGroup: null,
   draggedFileNode: null,
   width: canvas.width,
   height: canvas.height,
@@ -97,6 +99,8 @@ function draw() {
       visibleHeight,
     )
   })
+
+  drawGroups()
 
   const defered: { start: Vector; end: Vector }[] = []
 

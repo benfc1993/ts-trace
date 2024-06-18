@@ -5,8 +5,9 @@ import {
   getHoveredFunction,
 } from './clickOnFunction'
 import { setHoveredFunction } from './drawFile'
+import { getHoveredGroup, moveGroup } from './groups/groups'
 import { vector } from './math/createVector'
-import { dragFile } from './moveFile'
+import { moveFile } from './moveFile'
 import { nodes } from './parseGraph'
 import { Vector } from './types'
 
@@ -28,13 +29,18 @@ export function addInteraction(canvas: HTMLCanvasElement) {
 
     if (hoveredFile) {
       const node = nodes[hoveredFile]
-      state.draggedFileNode = {
-        filePath: hoveredFile,
-        node: node,
-      }
+      state.draggedFileNode = node
+
       return
     }
     state.draggedFileNode = null
+
+    const hoveredGroup = getHoveredGroup()
+    if (hoveredGroup) {
+      state.draggedGroup = hoveredGroup
+      return
+    }
+    state.draggedGroup = null
 
     if (state.draggingBlocked) return
 
@@ -46,7 +52,7 @@ export function addInteraction(canvas: HTMLCanvasElement) {
     Mouse.x = event.pageX - canvas.offsetLeft
     Mouse.y = event.pageY - canvas.offsetTop
 
-    if (!state.draggedFileNode) {
+    if (!state.draggedFileNode && !state.draggedGroup) {
       const hoveredFunction = getHoveredFunction()
       setHoveredFunction(hoveredFunction)
 
@@ -62,6 +68,14 @@ export function addInteraction(canvas: HTMLCanvasElement) {
         document.querySelector('body')!.style.cursor = 'move'
         return
       }
+
+      const hoveredGroup = getHoveredGroup()
+      if (hoveredGroup) {
+        state.draggingBlocked = true
+        document.querySelector('body')!.style.cursor = 'move'
+        return
+      }
+
       state.draggingBlocked = false
     }
 
@@ -74,8 +88,13 @@ export function addInteraction(canvas: HTMLCanvasElement) {
     state.dragstart.x = dragend.x
     state.dragstart.y = dragend.y
 
+    if (state.draggedGroup) {
+      moveGroup(state.draggedGroup, vector(mouseMovedX, mouseMovedY))
+      return
+    }
+
     if (state.draggedFileNode) {
-      dragFile(state.draggedFileNode, vector(mouseMovedX, mouseMovedY))
+      moveFile(state.draggedFileNode, vector(mouseMovedX, mouseMovedY))
       return
     }
     if (!state.dragging) return
@@ -116,9 +135,8 @@ export function addInteraction(canvas: HTMLCanvasElement) {
 }
 
 function completeDragging() {
-  if (state.draggedFileNode) {
-    state.draggedFileNode = null
-  }
+  state.draggedGroup = null
+  state.draggedFileNode = null
   state.dragging = false
   state.dragstart.x = 0
   state.dragstart.y = 0

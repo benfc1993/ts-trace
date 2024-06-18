@@ -49,7 +49,7 @@ export function getHoveredFile() {
       Mouse.canvasPosition.y > node.position.y - NODE_BORDER_WIDTH &&
       Mouse.canvasPosition.y <
         node.position.y +
-          (Object.keys(node.functions).length + 1) * NODE_LINE_HEIGHT +
+          (node.functionCount + 1) * NODE_LINE_HEIGHT +
           2 * NODE_BORDER_WIDTH &&
       Mouse.canvasPosition.x > node.position.x - NODE_BORDER_WIDTH &&
       Mouse.canvasPosition.x < node.position.x + NODE_WIDTH + NODE_BORDER_WIDTH
