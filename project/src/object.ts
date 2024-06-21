@@ -1,7 +1,7 @@
-import { testing } from "./another";
+import { testing, testingNest } from './another'
 
 export const myObj = {
   myMethod() {
-    return testing(3);
+    return testing(3)
   },
-};
+}

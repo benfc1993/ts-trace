@@ -7,6 +7,8 @@ import { createServer } from 'http'
 import { cwd } from 'process'
 import { Server } from 'socket.io'
 import { readFile } from 'fs/promises'
+import { argv } from 'node:process'
+import { dirname } from 'node:path'
 
 const app = express()
 const httpServer = createServer(app)
@@ -19,6 +21,7 @@ const filePositionUpdatesQueue: {
 }[] = []
 
 let updateFilePositionLock = false
+const rootDir = dirname(argv[argv.indexOf('-p') + 1])
 
 io.on('connection', async (client) => {
   client.on('pong', () => {
@@ -45,13 +48,13 @@ app.get('/', (_req, res) => {
 
 httpServer.listen(9476, () => {
   console.log('Pathfinder is running on http://localhost:9476')
-  const watcher = watch(`${cwd()}`, { persistent: true, recursive: true })
+  const watcher = watch(rootDir, { persistent: true, recursive: true })
   watcher.on('change', async (_, fileName) => {
     if (!fileName.includes('.pathfinder') && fileName.at(-1) === '~') {
       console.log(`file changed: ${fileName}`)
       execFile(
         `${cwd()}/bin/pathfinder`,
-        ['--single-file', `${(fileName as string).replace('~', '')}`],
+        [...argv, '--single-file', `${(fileName as string).replace('~', '')}`],
         async () => {
           io.emit('reload')
         },

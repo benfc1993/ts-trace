@@ -2,4 +2,27 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-node "$SCRIPT_DIR/../dist/parser.cjs" $@
+project=""
+watch=0
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -p)
+            project=$2
+            shift
+            ;;
+        -w|--watch)
+            watch=1
+            shift
+            ;;
+    esac
+    shift
+done
+
+echo "project: $project"
+
+node "$SCRIPT_DIR/../dist/parser.cjs" -p $project
+
+if [[ $watch = 1 ]]; then
+    node "$SCRIPT_DIR/../dist/server/index.js" -p $project
+fi
