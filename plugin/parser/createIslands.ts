@@ -11,6 +11,7 @@ export function generateIslands(nodes: ApplicationTraces) {
     if (fileIslands[filePath])
       fileIslands[filePath][1] = isIsland && fileIslands[filePath][1]
   })
+  console.log(fileIslands)
 
   const rootFiles = Object.entries(fileIslands).reduce(
     (acc: string[], [filePath, island]) => {

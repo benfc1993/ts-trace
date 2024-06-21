@@ -12,8 +12,7 @@ import { processExports } from './traces/processExports'
 import { addReverseLinks } from './traces/reverseTraces'
 import { getOrAddFileTraces, projectRelativePath } from './utils'
 
-export function processFiles(project: Project) {
-  const sourceFiles = project.getSourceFiles()
+export function processFiles(sourceFiles: SourceFile[]) {
   sourceFiles.forEach((sourceFile) => {
     pathPointer.filePath = projectRelativePath(sourceFile.getFilePath())
 

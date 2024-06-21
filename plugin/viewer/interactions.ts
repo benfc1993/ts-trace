@@ -4,8 +4,9 @@ import {
   getHoveredFile,
   getHoveredFunction,
 } from './clickOnFunction'
+import { updateFilePosition } from './connectToServer'
 import { setHoveredFunction } from './drawFile'
-import { getHoveredGroup, moveGroup } from './groups/groups'
+import { getGroupNodes, getHoveredGroup, moveGroup } from './groups/groups'
 import { vector } from './math/createVector'
 import { moveFile } from './moveFile'
 import { nodes } from './parseGraph'
@@ -135,6 +136,15 @@ export function addInteraction(canvas: HTMLCanvasElement) {
 }
 
 function completeDragging() {
+  if (state.draggedFileNode) {
+    console.log('updateFilePosition on drag end')
+    updateFilePosition(state.draggedFileNode)
+  }
+
+  if (state.draggedGroup) {
+    getGroupNodes(state.draggedGroup).forEach(updateFilePosition)
+  }
+
   state.draggedGroup = null
   state.draggedFileNode = null
   state.dragging = false

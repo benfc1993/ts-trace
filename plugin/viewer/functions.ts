@@ -7,6 +7,7 @@ export const functionPositions: Record<string, { start: Vector; end: Vector }> =
   {}
 
 export function createFunctionPositions() {
+  Object.keys(functionPositions).forEach((key) => delete functionPositions[key])
   Object.entries(nodes).forEach(([file, node]) => {
     changeFunctionPositions(file, node)
   })

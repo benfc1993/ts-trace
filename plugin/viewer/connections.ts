@@ -9,6 +9,7 @@ export const connectionLines: {
 } = {}
 
 export function createConnections() {
+  Object.keys(connectionLines).forEach((key) => delete connectionLines[key])
   Object.entries(nodes).forEach(([filePath, node]) => {
     Object.entries(node.functions).forEach(([functionName, connections]) => {
       const functionPosition = functionPositions[filePath + '#' + functionName]

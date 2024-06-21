@@ -8,7 +8,9 @@ import { drawGroup } from './drawGroup'
 import { Groups } from './types'
 
 const groups: Groups = {}
-
+export function clearGroups() {
+  Object.keys(groups).forEach((id) => delete groups[id])
+}
 export function getGroups() {
   return groups
 }

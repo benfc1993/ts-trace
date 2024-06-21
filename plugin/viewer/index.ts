@@ -1,13 +1,17 @@
 import { bezier } from './components/bezier'
 import { containedStyles } from './components/containedStyles'
+import { connectToServer } from './connectToServer'
 import { connectionLines, createConnections } from './connections'
 import { NODE_SPACING, drawFile } from './drawFile'
 import { createFunctionPositions } from './functions'
-import { drawGroups } from './groups/groups'
+import { clearGroups, drawGroups } from './groups/groups'
 import { addInteraction } from './interactions'
 import { vector } from './math/createVector'
-import { GraphNodes, parseGraph } from './parseGraph'
+import { nodes, parseGraph } from './parseGraph'
+import { reset } from './reset'
 import { State, Vector } from './types'
+
+connectToServer()
 
 const lineColor = '#ffffff'
 const lineUnfocusedColor = '#3d3d3d'
@@ -15,40 +19,6 @@ const lineUnfocusedColor = '#3d3d3d'
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
 export const ctx = canvas.getContext('2d')!
 if (!ctx) throw new Error('No context')
-
-export function resize() {
-  const changeX = ctx.canvas.width - document.body.clientWidth
-  const changeY = ctx.canvas.height - document.body.clientHeight
-
-  ctx.translate(state.canvasOrigin.x, state.canvasOrigin.y)
-  ctx.canvas.width = document.body.clientWidth
-  ctx.canvas.height = document.body.clientHeight
-
-  state.canvasOrigin.x -= changeX / state.scale - changeX / state.scale
-  state.canvasOrigin.y -= changeY / state.scale - changeY / state.scale
-
-  ctx.scale(state.scale, state.scale)
-  ctx.translate(-state.canvasOrigin.x, -state.canvasOrigin.y)
-}
-
-let nodes: GraphNodes = {}
-export const higlightedConnections: Set<string> = new Set()
-
-async function setup() {
-  nodes = await parseGraph()
-  addInteraction(canvas)
-  resize()
-  createFunctionPositions()
-  createConnections()
-
-  let font = new FontFace('roboto-mono', 'url(fonts/roboto-mono.ttf)', {
-    style: 'normal',
-    weight: '400',
-  })
-  await font.load().then((font) => document.fonts.add(font))
-
-  draw()
-}
 
 export const state: State = {
   lastClick: vector(),
@@ -68,6 +38,60 @@ export const state: State = {
   draggingTimeout: false,
 }
 
+export function resize() {
+  const changeX = ctx.canvas.width - document.body.clientWidth
+  const changeY = ctx.canvas.height - document.body.clientHeight
+
+  ctx.translate(state.canvasOrigin.x, state.canvasOrigin.y)
+  ctx.canvas.width = document.body.clientWidth
+  ctx.canvas.height = document.body.clientHeight
+
+  state.canvasOrigin.x -= changeX / state.scale - changeX / state.scale
+  state.canvasOrigin.y -= changeY / state.scale - changeY / state.scale
+
+  ctx.scale(state.scale, state.scale)
+  ctx.translate(-state.canvasOrigin.x, -state.canvasOrigin.y)
+}
+
+export const higlightedConnections: Set<string> = new Set()
+
+// export async function reset() {
+//   // cleanState()
+//   try {
+//     const savedState = JSON.parse(
+//       localStorage.getItem('pathfinder-view') ?? '',
+//     ) as {
+//       scale: number
+//       canvasOrigin: Vector
+//     }
+//     state.scale = savedState.scale
+//     state.canvasOrigin = savedState.canvasOrigin
+//   } catch (e) {}
+//
+//   await parseGraph()
+//   resize()
+//   createFunctionPositions()
+//   createConnections()
+//
+//   let font = new FontFace('roboto-mono', 'url(fonts/roboto-mono.ttf)', {
+//     style: 'normal',
+//     weight: '400',
+//   })
+//   await font.load().then((font) => document.fonts.add(font))
+// }
+
+async function setup() {
+  await reset()
+  resize()
+  let font = new FontFace('roboto-mono', 'url(fonts/roboto-mono.ttf)', {
+    style: 'normal',
+    weight: '400',
+  })
+  await font.load().then((font) => document.fonts.add(font))
+  addInteraction(canvas)
+  draw()
+}
+
 export const Mouse = {
   x: 0,
   y: 0,
@@ -80,6 +104,11 @@ export const Mouse = {
 }
 
 function draw() {
+  console.log('draw')
+  localStorage.setItem(
+    'pathfinder-view',
+    JSON.stringify({ scale: state.scale, canvasOrigin: state.canvasOrigin }),
+  )
   const visibleWidth = ctx.canvas.width / state.scale
   const visibleHeight = ctx.canvas.height / state.scale
 

@@ -1,15 +1,15 @@
 import { readFileSync, writeFileSync } from 'fs'
 import type { ApplicationTraces } from './types'
-import path from 'path'
 import type { FileNodes } from '../types'
 import { createCallableName } from './processors/traces/reverseTraces'
 import { generateIslands } from './createIslands'
 
 const nodes: FileNodes = {}
+const seen = new Set<string>()
 
 export function createGraph() {
   const traces: ApplicationTraces = JSON.parse(
-    readFileSync(path.join(__dirname, 'out.json'), 'utf-8'),
+    readFileSync('.pathfinder/out.json', 'utf-8'),
   )
   const islandRoots = generateIslands(traces)
 
@@ -40,6 +40,7 @@ function generateNodes(traces: ApplicationTraces, islandRoots: string[]) {
     while (toVisit.length > 0) {
       const filePath = toVisit.shift()
       if (!filePath) break
+
       const callTrace = traces[filePath]
       if (!callTrace) continue
 
@@ -50,6 +51,8 @@ function generateNodes(traces: ApplicationTraces, islandRoots: string[]) {
       let skip = false
 
       for (const trace of tracesArray) {
+        if (seen.has(`${filePath}#${trace}`)) continue
+        seen.add(`${filePath}#${trace}`)
         if (
           nodes[`${filePath}#${trace}`] &&
           nodes[`${filePath}#${trace}`].islandIndex !== islandIndex &&
@@ -78,6 +81,24 @@ function generateNodes(traces: ApplicationTraces, islandRoots: string[]) {
         })
     }
   }
+
+  Object.entries(traces).forEach(([filePath]) => {
+    const callTrace = traces[filePath]
+    const tracesArray = [...Object.keys(callTrace.traces), ...callTrace.exports]
+    tracesArray.forEach((trace) => {
+      if (!seen.has(`${filePath}#${trace}`) && callTrace) {
+        console.log('here')
+        seen.add(`${filePath}#${trace}`)
+        nodes[`${filePath}#${trace}`] = {
+          filePath,
+          exported: callTrace.traces[trace]?.exported ?? false,
+          in: [],
+          out: [],
+          islandIndex: -1,
+        }
+      }
+    })
+  })
 }
 
 function generateEdges(applicationTraces: ApplicationTraces) {

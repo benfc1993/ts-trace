@@ -7,7 +7,8 @@
     "dev": "rm -rf build && mkdir build && cp -r plugin/viewer/fonts build/fonts && cp plugin/viewer/index.html build/index.html && ./bin/pathfinder && cp ./.pathfinder/graph.json ./build/graph.json && esbuild ./plugin/viewer/index.ts --bundle --watch --outdir=build --minify --servedir=build",
     "build:parser": "esbuild ./plugin/parser/index.ts --bundle --outfile=./dist/parser.cjs --minify --platform=node --external:ts-morph",
     "build:viewer": "mkdir -p dist/viewer && cp plugin/viewer/index.html dist/viewer/index.html && cp -r plugin/viewer/fonts dist/viewer/fonts && esbuild ./plugin/viewer/index.ts --bundle --outfile=./dist/viewer/index.js --minify --external:*graph.json",
-    "bundle": "rm -rf dist && npm run build:parser && npm run build:viewer",
+    "build:server": "mkdir -p dist/server && esbuild ./plugin/server/index.ts --bundle --platform=node --outfile=./dist/server/index.js --minify",
+    "bundle": "rm -rf dist && npm run build:parser && npm run build:viewer && npm run build:server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
@@ -17,11 +18,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "@types/node": "^20.12.12",
     "esbuild": "^0.21.3",
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
     "ts-morph": "^22.0.0"
   }
 }

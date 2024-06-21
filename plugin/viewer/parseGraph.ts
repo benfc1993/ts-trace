@@ -7,10 +7,10 @@ import {
   addGroup,
   addNodeToGroup,
   getGroup,
-  moveGroup,
   updateGroupBounds,
 } from './groups/groups'
 import { GROUP_PADDING } from './groups/calculateGroupBounds'
+import { updateFilePosition } from './connectToServer'
 
 export type GraphNode = {
   groupId: string | null
@@ -27,8 +27,17 @@ export type GraphNodes = Record<string, GraphNode>
 
 export const nodes: GraphNodes = {}
 const positions: Record<number, number> = {}
+let savedFilePositions: Record<string, Vector> = {}
 
 export async function parseGraph() {
+  Object.keys(nodes).forEach((node) => delete nodes[node])
+  savedFilePositions = await fetch('filePositions.json')
+    .then((res) => {
+      if (res.ok) return res.json()
+      else return {}
+    })
+    .catch(() => ({}))
+
   const graph = await fetch('graph.json').then((res) => res.json())
   const islands: [string, FileNodes][] = Object.entries(graph)
   let groupY = 0
@@ -40,6 +49,7 @@ export async function parseGraph() {
     addGroup(groupId)
 
     for (const [functionId, functionData] of entries) {
+      console.log(functionId)
       const [filePath, functionName] = functionId.split('#')
       if (getNodeById(functionId)) {
         const node = getNodeById(functionId)
@@ -51,9 +61,11 @@ export async function parseGraph() {
         continue
       }
 
+      const savedPosition = savedFilePositions[filePath]
+
       const newNode: GraphNode = {
         groupId,
-        position: vector(),
+        position: !!savedPosition ? savedPosition : vector(),
         functionCount: 0,
         filePath,
         functions: {
@@ -80,12 +92,16 @@ export async function parseGraph() {
     }
     nodeArr.forEach(([, node]) => {
       const currentY = positions[node.position.x] ?? 0
-      node.position.y = currentY
+
+      const savedPosition = savedFilePositions[node.filePath]
+      node.position.y = !!savedPosition ? savedPosition.y : currentY
+
       positions[node.position.x] =
         node.position.y +
         Object.keys(node.functions).length * NODE_LINE_HEIGHT +
         NODE_SPACING
     })
+
     updateGroupBounds(groupId)
     const group = getGroup(groupId)
 
@@ -105,6 +121,7 @@ export async function parseGraph() {
   //     NODE_SPACING
   //   if (node.groupId) updateGroupBounds(node.groupId)
   // })
+  Object.values(nodes).forEach(updateFilePosition)
   return nodes
 }
 
@@ -115,10 +132,24 @@ function traverseConnections(
 ) {
   for (const connection of connections) {
     const { connectionId } = connection
+    const [filePath] = connectionId.split('#')
     const fileNode = graph[connectionId]
 
-    positionDownstreamNode(graphNode, connection.connectionId)
-    traverseConnections(graph, getNodeById(connectionId), fileNode.out)
+    if (
+      savedFilePositions[filePath] &&
+      !savedFilePositions[graphNode.filePath]
+    ) {
+      let downStreamPosition = savedFilePositions[filePath]
+      if (graphNode.position.x > downStreamPosition.x) {
+        graphNode.position.x =
+          downStreamPosition.x - (NODE_WIDTH + NODE_SPACING)
+      }
+    } else {
+      positionDownstreamNode(graphNode, connectionId)
+    }
+    console.log(fileNode, filePath)
+    // if (!fileNode) continue
+    traverseConnections(graph, getNodeById(connectionId), fileNode?.out ?? [])
   }
 }
 
@@ -138,6 +169,21 @@ function positionDownstreamNode(
       position: vector(upstreamNode.position.x + xSpacing, 0),
       functions: {},
     }
+
+    if (savedFilePositions[downstreamConnectionId]) {
+      nodes[filePath].position = vector(
+        savedFilePositions[downstreamConnectionId].x,
+        savedFilePositions[downstreamConnectionId].y,
+      )
+    }
+    return
+  }
+
+  if (savedFilePositions[downstreamNode.filePath]) {
+    downstreamNode.position = vector(
+      savedFilePositions[downstreamNode.filePath].x,
+      savedFilePositions[downstreamNode.filePath].y,
+    )
     return
   }
 
