@@ -104,7 +104,6 @@ export const Mouse = {
 }
 
 function draw() {
-  console.log('draw')
   localStorage.setItem(
     'pathfinder-view',
     JSON.stringify({ scale: state.scale, canvasOrigin: state.canvasOrigin }),

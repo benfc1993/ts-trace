@@ -49,7 +49,6 @@ export async function parseGraph() {
     addGroup(groupId)
 
     for (const [functionId, functionData] of entries) {
-      console.log(functionId)
       const [filePath, functionName] = functionId.split('#')
       if (getNodeById(functionId)) {
         const node = getNodeById(functionId)
@@ -147,8 +146,6 @@ function traverseConnections(
     } else {
       positionDownstreamNode(graphNode, connectionId)
     }
-    console.log(fileNode, filePath)
-    // if (!fileNode) continue
     traverseConnections(graph, getNodeById(connectionId), fileNode?.out ?? [])
   }
 }

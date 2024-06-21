@@ -17,7 +17,6 @@ window.addEventListener('resize', resize)
 export function addInteraction(canvas: HTMLCanvasElement) {
   canvas.addEventListener('click', (event) => {
     if (clickOnFunction(event)) return
-    console.log('unhandled')
   })
 
   canvas.addEventListener('mousedown', (event) => {
@@ -137,7 +136,6 @@ export function addInteraction(canvas: HTMLCanvasElement) {
 
 function completeDragging() {
   if (state.draggedFileNode) {
-    console.log('updateFilePosition on drag end')
     updateFilePosition(state.draggedFileNode)
   }
 

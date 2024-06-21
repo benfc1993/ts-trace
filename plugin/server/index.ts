@@ -53,7 +53,6 @@ httpServer.listen(9476, () => {
         `${cwd()}/bin/pathfinder`,
         ['--single-file', `${(fileName as string).replace('~', '')}`],
         async () => {
-          console.log('reloading')
           io.emit('reload')
         },
       )

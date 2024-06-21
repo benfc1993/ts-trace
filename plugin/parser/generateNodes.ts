@@ -87,7 +87,6 @@ function generateNodes(traces: ApplicationTraces, islandRoots: string[]) {
     const tracesArray = [...Object.keys(callTrace.traces), ...callTrace.exports]
     tracesArray.forEach((trace) => {
       if (!seen.has(`${filePath}#${trace}`) && callTrace) {
-        console.log('here')
         seen.add(`${filePath}#${trace}`)
         nodes[`${filePath}#${trace}`] = {
           filePath,
