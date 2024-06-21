@@ -6,6 +6,7 @@ import { parseGraph } from './parseGraph'
 import { Vector } from './types'
 
 export async function reset() {
+  state.paused = true
   try {
     const savedState = JSON.parse(
       localStorage.getItem('pathfinder-view') ?? '',
@@ -21,4 +22,5 @@ export async function reset() {
   await parseGraph()
   createFunctionPositions()
   createConnections()
+  state.paused = false
 }

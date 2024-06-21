@@ -7,6 +7,7 @@ export type Vector = {
 }
 
 export type State = {
+  paused: boolean
   draggedGroup: string | null
   lastClick: Vector
   dragstart: Vector

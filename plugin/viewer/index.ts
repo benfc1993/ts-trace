@@ -21,6 +21,7 @@ export const ctx = canvas.getContext('2d')!
 if (!ctx) throw new Error('No context')
 
 export const state: State = {
+  paused: false,
   lastClick: vector(),
   dragstart: vector(),
   dragging: false,
@@ -55,31 +56,6 @@ export function resize() {
 
 export const higlightedConnections: Set<string> = new Set()
 
-// export async function reset() {
-//   // cleanState()
-//   try {
-//     const savedState = JSON.parse(
-//       localStorage.getItem('pathfinder-view') ?? '',
-//     ) as {
-//       scale: number
-//       canvasOrigin: Vector
-//     }
-//     state.scale = savedState.scale
-//     state.canvasOrigin = savedState.canvasOrigin
-//   } catch (e) {}
-//
-//   await parseGraph()
-//   resize()
-//   createFunctionPositions()
-//   createConnections()
-//
-//   let font = new FontFace('roboto-mono', 'url(fonts/roboto-mono.ttf)', {
-//     style: 'normal',
-//     weight: '400',
-//   })
-//   await font.load().then((font) => document.fonts.add(font))
-// }
-
 async function setup() {
   await reset()
   resize()
@@ -104,6 +80,8 @@ export const Mouse = {
 }
 
 function draw() {
+  if (state.paused) requestAnimationFrame(draw)
+
   localStorage.setItem(
     'pathfinder-view',
     JSON.stringify({ scale: state.scale, canvasOrigin: state.canvasOrigin }),
@@ -166,7 +144,7 @@ function draw() {
     })
   })
 
-  requestAnimationFrame(() => draw())
+  requestAnimationFrame(draw)
 }
 
 setup()

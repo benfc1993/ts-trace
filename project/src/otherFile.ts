@@ -1,8 +1,8 @@
-import { testing } from "./another";
-import { MyClass } from "./class";
-import { myObj } from "./object";
+import { testing } from './another'
+import { Testing } from './inherit'
 
 const test = () => {
-  const a = new MyClass();
-  testing(a.myMethod());
-};
+  const a = new Testing()
+  testing(a.myMethod())
+  a.otherMethod()
+}

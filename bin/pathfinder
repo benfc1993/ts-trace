@@ -5,6 +5,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 project=""
 watch=0
 
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW="\e[33m"
+ENDCOLOR="\e[0m"
+
 while [[ $# -gt 0 ]]; do
     case $1 in
         -p)
@@ -19,10 +24,21 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-echo "project: $project"
+echo -e $(printf "${GREEN}Pathfinder Running")
+echo ""
+echo -e $(printf "${YELLOW}Parsing project: $project")
+echo ""
 
 node "$SCRIPT_DIR/../dist/parser.cjs" -p $project
 
+echo -e $(printf "${GREEN}Done Parsing")
+echo ""
+
 if [[ $watch = 1 ]]; then
+    echo -e $(printf "${BLUE}Starting Server")
+    echo ""
+    echo -e $(printf "${YELLOW}Watching $project")
+    echo ""
+    echo -e $(printf "${ENDCOLOR}")
     node "$SCRIPT_DIR/../dist/server/index.js" -p $project
 fi
