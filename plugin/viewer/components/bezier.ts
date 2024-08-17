@@ -1,6 +1,6 @@
 import { ctx } from '..'
-import { lerp } from '../math/lerp'
-import { Vector } from '../types'
+import { Vector } from '../libs/math/Vector'
+import { lerp } from '../libs/math/lerp'
 
 export function bezier(
   start: Vector,

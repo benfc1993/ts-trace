@@ -1,21 +1,9 @@
-import { GraphNode } from './parseGraph'
-
-export type Vector = {
-  x: number
-  y: number
-  lerp: (other: Vector, t: number) => Vector
-}
+import { Vector } from './libs/math/Vector'
 
 export type State = {
+  cursor: 'default' | 'grab' | 'grabbing' | 'move' | 'pointer'
   paused: boolean
-  draggedGroup: string | null
   lastClick: Vector
-  dragstart: Vector
-  dragging: boolean
-  draggingBlocked: boolean
-  draggingTimeout: boolean
-  dragTimeout: NodeJS.Timeout | null
-  draggedFileNode: GraphNode | null
   width: number
   height: number
   zoomIntensity: number
@@ -23,4 +11,5 @@ export type State = {
   zoomMin: number
   scale: number
   canvasOrigin: Vector
+  connectionsToDraw: Set<string>
 }

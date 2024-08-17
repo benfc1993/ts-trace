@@ -1,9 +1,9 @@
-import { modifyConnection } from './connections'
-import { changeFunctionPositions } from './functions'
-import { GraphNode } from './parseGraph'
-import { Vector } from './types'
+import { modifyConnection } from '../connections'
+import { changeFunctionPositions } from '../functions'
+import { Vector } from '../libs/math/Vector'
+import { GraphNode } from '../parseGraph'
 
-export function moveFile(node: GraphNode, move: Vector) {
+export function moveNode(node: GraphNode, move: Vector) {
   node.position.x += move.x
   node.position.y += move.y
 

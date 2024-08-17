@@ -1,12 +1,16 @@
-import { NODE_LINE_HEIGHT } from './drawFile'
+import { Connection } from '../types'
+import { bezier } from './components/bezier'
+import { containedStyles } from './components/containedStyles'
+import { NODE_LINE_HEIGHT, NODE_SPACING } from './nodes/drawNode'
 import { functionPositions } from './functions'
-import { vector } from './math/createVector'
+import { Vector } from './libs/math/Vector'
 import { nodes } from './parseGraph'
-import { Vector } from './types'
 
 export const connectionLines: {
   [connection: string]: { start: Vector; end: Vector }
 } = {}
+
+export const connectionsFrom: { [connectionId: string]: string[] } = {}
 
 export function createConnections() {
   Object.keys(connectionLines).forEach((key) => delete connectionLines[key])
@@ -17,14 +21,15 @@ export function createConnections() {
         const externalFunctionPosition =
           functionPositions[connection.connectionId]
 
-        connectionLines[
-          filePath + '#' + functionName + '-' + connection.connectionId
-        ] = {
-          start: vector(
+        const fromConnection = filePath + '#' + functionName
+        const fullConnectionId = fromConnection + '-' + connection.connectionId
+
+        connectionLines[fullConnectionId] = {
+          start: new Vector(
             functionPosition.end.x,
             functionPosition.start.y + NODE_LINE_HEIGHT / 2,
           ),
-          end: vector(
+          end: new Vector(
             externalFunctionPosition.start.x,
             externalFunctionPosition.start.y + NODE_LINE_HEIGHT / 2,
           ),
@@ -55,4 +60,21 @@ export function modifyConnection(
     connectionLine.end.x += changes.offset.end.x
     connectionLine.end.y += changes.offset.end.y
   }
+}
+
+const lineColor = '#ffffff'
+const lineUnfocusedColor = '#3d3d3d'
+
+export function drawConnection(connectionId: string, faded: boolean = false) {
+  const { start, end } = connectionLines[connectionId]
+  containedStyles((ctx) => {
+    ctx.strokeStyle = faded ? lineUnfocusedColor : lineColor
+    bezier(
+      start,
+      new Vector(start.x + NODE_SPACING, start.y),
+      new Vector(end.x - NODE_SPACING, end.y),
+      end,
+      156,
+    )
+  })
 }

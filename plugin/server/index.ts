@@ -1,4 +1,3 @@
-import util from 'node:util'
 import { execFile } from 'node:child_process'
 
 import express from 'express'

@@ -2,11 +2,14 @@ import io from 'socket.io-client'
 import { GraphNode } from './parseGraph'
 import { reset } from './reset'
 
-const socket = io('http://localhost:9476')
+const socket = io('http://localhost:9476', { reconnection: false })
 
 export function connectToServer() {
   socket.on('connected', () => {
     console.log(`${socket.id} connected`)
+  })
+  socket.on('disconnected', () => {
+    socket.close()
   })
   socket.on('reload', () => {
     reset()

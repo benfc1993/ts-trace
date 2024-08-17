@@ -1,29 +1,16 @@
-import { Mouse, ctx, higlightedConnections, state } from '.'
-import { NODE_BORDER_WIDTH, NODE_LINE_HEIGHT, NODE_WIDTH } from './drawFile'
-import { functionPositions } from './functions'
+import { Mouse, ctx, higlightedConnections, state } from '..'
+import { NODE_BORDER_WIDTH, NODE_LINE_HEIGHT, NODE_WIDTH } from './drawNode'
+import { functionPositions } from '../functions'
 import { getFunctionById } from './getNodes'
-import { nodes } from './parseGraph'
+import { nodes } from '../parseGraph'
 
-export function clickOnFunction(event: MouseEvent): boolean {
-  if (
-    state.lastClick.x !== event.pageX - ctx.canvas.offsetLeft &&
-    state.lastClick.y !== event.pageY - ctx.canvas.offsetTop
-  )
-    return false
+export function clickOnFunction(functionId: string): void {
+  higlightedConnections.clear()
 
-  const functionName = getHoveredFunction()
-  if (functionName) {
-    higlightedConnections.clear()
-
-    addConnectionHighlights(functionName)
-
-    return true
-  }
-
-  return false
+  addConnectionHighlights(functionId)
 }
 
-export function getHoveredFunction(): string | null {
+export function getHoveredFunctionId(): string | null {
   const functionKeys = Object.keys(functionPositions)
 
   for (let i = 0; i < functionKeys.length; i++) {
@@ -41,7 +28,7 @@ export function getHoveredFunction(): string | null {
   return null
 }
 
-export function getHoveredFile() {
+export function getHoveredNodeId() {
   const files = Object.entries(nodes)
   for (let i = 0; i < files.length; i++) {
     const [file, node] = files[i]

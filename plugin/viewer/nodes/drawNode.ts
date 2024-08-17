@@ -1,8 +1,9 @@
-import { ctx } from '.'
-import { containedStyles } from './components/containedStyles'
-import { vector } from './math/createVector'
-import { GraphNode } from './parseGraph'
-import { Vector } from './types'
+import { ctx } from '..'
+import { containedStyles } from '../components/containedStyles'
+import { getInteractionState } from '../interactions/interactions'
+import { Vector } from '../libs/math/Vector'
+import { GraphNode } from '../parseGraph'
+import { getNodeDimensions } from './getNodeDimensions'
 
 export const NODE_LINE_HEIGHT = 25
 export const NODE_BORDER_WIDTH = 2
@@ -17,43 +18,37 @@ export function setHoveredFunction(connectionId: string | null) {
   hoveredFunction = connectionId
 }
 
-export function drawFile(fileName: string, graphNode: GraphNode) {
+export function drawNode(graphNode: GraphNode) {
   const { position, functions } = graphNode
-  const functionCount = Object.keys(functions).length
+  const nodeName = graphNode.filePath
 
   const NODE_PADDING = 5
-  const adjustedFileName = adjustFileName(fileName)
+  const adjustedFileName = adjustNodeName(nodeName)
+  const { x, y, width, height } = getNodeDimensions(graphNode)
   containedStyles(() => {
+    const interactionState = getInteractionState()
     ctx.fillStyle = '#555'
-    ctx.strokeStyle = '#f2f2f2'
+    ctx.strokeStyle = interactionState.selectedNodeIds.has(graphNode.filePath)
+      ? '#bad455'
+      : '#f2f2f2'
     ctx.lineWidth = NODE_BORDER_WIDTH
-    ctx.fillRect(
-      position.x,
-      position.y,
-      NODE_WIDTH,
-      NODE_LINE_HEIGHT + NODE_LINE_HEIGHT * functionCount,
-    )
-    ctx.strokeRect(
-      position.x,
-      position.y,
-      NODE_WIDTH,
-      NODE_LINE_HEIGHT + NODE_LINE_HEIGHT * functionCount,
-    )
+    ctx.fillRect(x, y, width, height)
+    ctx.strokeRect(x, y, width, height)
     ctx.fillStyle = '#f2f2f2'
     ctx.font = '12px roboto-mono'
     ctx.fillText(
       adjustedFileName,
-      position.x + NODE_PADDING,
-      position.y + NODE_LINE_HEIGHT / 2 + NODE_PADDING,
-      NODE_WIDTH - NODE_PADDING * 2,
+      x + NODE_PADDING,
+      y + NODE_LINE_HEIGHT / 2 + NODE_PADDING,
+      width - NODE_PADDING * 2,
     )
     Object.entries(functions).forEach(([functionName, functionDetails], i) => {
       drawFunction(
-        `${fileName}#${functionName}`,
+        `${nodeName}#${functionName}`,
         functionName,
         functionDetails.exported,
-        vector(position.x, position.y + NODE_LINE_HEIGHT * (i + 1)),
-        NODE_WIDTH,
+        new Vector(position.x, position.y + NODE_LINE_HEIGHT * (i + 1)),
+        width,
         NODE_LINE_HEIGHT,
       )
     })
@@ -105,10 +100,10 @@ function drawFunction(
     ctx.fill()
   })
 }
-function adjustFileName(fileName: string) {
-  const parts = fileName.split('/')
+function adjustNodeName(nodeName: string) {
+  const parts = nodeName.split('/')
   const nodeModulesIndex = parts.indexOf('node_modules')
-  if (nodeModulesIndex < 0) return fileName
+  if (nodeModulesIndex < 0) return nodeName
   const set = new Set(parts)
   set.delete('@types')
 

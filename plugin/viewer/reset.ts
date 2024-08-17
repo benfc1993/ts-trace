@@ -1,9 +1,9 @@
 import { state } from '.'
 import { createConnections } from './connections'
 import { createFunctionPositions } from './functions'
-import { clearGroups } from './groups/groups'
+import { clearFrames } from './frames/frames'
 import { parseGraph } from './parseGraph'
-import { Vector } from './types'
+import { Vector } from './libs/math/Vector'
 
 export async function reset() {
   state.paused = true
@@ -18,7 +18,7 @@ export async function reset() {
     state.canvasOrigin = savedState.canvasOrigin
   } catch (e) {}
 
-  clearGroups()
+  clearFrames()
   await parseGraph()
   createFunctionPositions()
   createConnections()

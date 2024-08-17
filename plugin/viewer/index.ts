@@ -1,42 +1,36 @@
-import { bezier } from './components/bezier'
 import { containedStyles } from './components/containedStyles'
 import { connectToServer } from './connectToServer'
-import { connectionLines, createConnections } from './connections'
-import { NODE_SPACING, drawFile } from './drawFile'
-import { createFunctionPositions } from './functions'
-import { clearGroups, drawGroups } from './groups/groups'
-import { addInteraction } from './interactions'
-import { vector } from './math/createVector'
-import { nodes, parseGraph } from './parseGraph'
+import { connectionLines, drawConnection } from './connections'
+import { drawNode } from './nodes/drawNode'
+import { drawFrames } from './frames/frames'
+import {
+  addInteraction,
+  getInteractionState,
+  updateCursor,
+} from './interactions/interactions'
+import { Vector } from './libs/math/Vector'
+import { nodes } from './parseGraph'
 import { reset } from './reset'
-import { State, Vector } from './types'
+import { State } from './types'
 
 connectToServer()
-
-const lineColor = '#ffffff'
-const lineUnfocusedColor = '#3d3d3d'
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
 export const ctx = canvas.getContext('2d')!
 if (!ctx) throw new Error('No context')
 
 export const state: State = {
+  cursor: 'default',
   paused: false,
-  lastClick: vector(),
-  dragstart: vector(),
-  dragging: false,
-  draggingBlocked: false,
-  draggedGroup: null,
-  draggedFileNode: null,
+  lastClick: Vector.Zero(),
   width: canvas.width,
   height: canvas.height,
   zoomIntensity: 0.1,
   zoomMax: 3,
   zoomMin: 0.2,
-  canvasOrigin: vector(),
+  canvasOrigin: Vector.Zero(),
   scale: 1,
-  dragTimeout: null,
-  draggingTimeout: false,
+  connectionsToDraw: new Set<string>(),
 }
 
 export function resize() {
@@ -80,7 +74,10 @@ export const Mouse = {
 }
 
 function draw() {
-  if (state.paused) requestAnimationFrame(draw)
+  if (state.paused) return requestAnimationFrame(draw)
+
+  state.connectionsToDraw.clear()
+  state.connectionsToDraw = new Set(Object.keys(connectionLines))
 
   localStorage.setItem(
     'pathfinder-view',
@@ -106,42 +103,41 @@ function draw() {
     )
   })
 
-  drawGroups()
+  drawFrames()
 
-  const defered: { start: Vector; end: Vector }[] = []
-
-  for (const [connection, { start, end }] of Object.entries(connectionLines)) {
-    if (higlightedConnections.has(connection)) {
-      defered.push({ start, end })
+  for (const connectionId of state.connectionsToDraw) {
+    if (higlightedConnections.has(connectionId)) {
       continue
     }
-    containedStyles(() => {
-      ctx.strokeStyle =
-        higlightedConnections.size === 0 ? lineColor : lineUnfocusedColor
-      bezier(
-        start,
-        vector(start.x + NODE_SPACING, start.y),
-        vector(end.x - NODE_SPACING, end.y),
-        end,
-        156,
-      )
-    })
+    drawConnection(connectionId, higlightedConnections.size > 0)
   }
-  Object.entries(nodes).forEach(([file, node]) => {
-    drawFile(file, node)
+
+  Object.values(nodes).forEach((node) => {
+    if (!node.groupId) drawNode(node)
   })
 
-  defered.forEach(({ start, end }) => {
-    containedStyles(() => {
-      ctx.strokeStyle = lineColor
-      bezier(
-        start,
-        vector(start.x + NODE_SPACING, start.y),
-        vector(end.x - NODE_SPACING, end.y),
-        end,
-        156,
+  higlightedConnections.forEach((connection) => {
+    drawConnection(connection, false)
+  })
+
+  canvas.style.cursor = updateCursor()
+
+  containedStyles(() => {
+    const interactionState = getInteractionState()
+
+    if (interactionState.boxSelect) {
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(
+        interactionState.boxSelect.x,
+        interactionState.boxSelect.y,
+        (interactionState.dragEnd.x -
+          (interactionState.boxSelect.x - state.canvasOrigin.x) * state.scale) /
+          state.scale,
+        (interactionState.dragEnd.y -
+          (interactionState.boxSelect.y - state.canvasOrigin.y) * state.scale) /
+          state.scale,
       )
-    })
+    }
   })
 
   requestAnimationFrame(draw)
