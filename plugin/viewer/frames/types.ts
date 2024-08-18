@@ -6,6 +6,7 @@ export type Frame = {
   name: string
   bounds: { start: Vector; end: Vector }
   nodes: Set<GraphNode>
+  titleBounds: { start: Vector; end: Vector }
 }
 
 export type Frames = Record<string, Frame>

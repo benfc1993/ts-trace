@@ -1,4 +1,5 @@
 import { ctx } from '..'
+import { NODE_BG, SELECTED_COLOR } from '../colors'
 import { containedStyles } from '../components/containedStyles'
 import { getInteractionState } from '../interactions/interactions'
 import { Vector } from '../libs/math/Vector'
@@ -25,11 +26,12 @@ export function drawNode(graphNode: GraphNode) {
   const NODE_PADDING = 5
   const adjustedFileName = adjustNodeName(nodeName)
   const { x, y, width, height } = getNodeDimensions(graphNode)
+
   containedStyles(() => {
     const interactionState = getInteractionState()
-    ctx.fillStyle = '#555'
+    ctx.fillStyle = NODE_BG
     ctx.strokeStyle = interactionState.selectedNodeIds.has(graphNode.filePath)
-      ? '#bad455'
+      ? SELECTED_COLOR
       : '#f2f2f2'
     ctx.lineWidth = NODE_BORDER_WIDTH
     ctx.fillRect(x, y, width, height)

@@ -1,4 +1,6 @@
-import { Mouse, state } from '..'
+import { Mouse, ctx, state } from '..'
+import { SELECTED_COLOR } from '../colors'
+import { containedStyles } from '../components/containedStyles'
 import { Vector } from '../libs/math/Vector'
 import { getNodeDimensions } from '../nodes/getNodeDimensions'
 import { nodes } from '../parseGraph'
@@ -62,5 +64,30 @@ export function updateBoxSelection() {
       )
     )
       interactionState.selectedNodeIds.add(node.filePath)
+  })
+}
+
+export function drawBoxSelect() {
+  containedStyles(() => {
+    const interactionState = getInteractionState()
+
+    if (interactionState.boxSelect) {
+      ctx.strokeStyle = SELECTED_COLOR
+      ctx.fillStyle = SELECTED_COLOR + '10'
+      const x = interactionState.boxSelect.x,
+        y = interactionState.boxSelect.y,
+        w =
+          (interactionState.dragEnd.x -
+            (interactionState.boxSelect.x - state.canvasOrigin.x) *
+              state.scale) /
+          state.scale,
+        h =
+          (interactionState.dragEnd.y -
+            (interactionState.boxSelect.y - state.canvasOrigin.y) *
+              state.scale) /
+          state.scale
+      ctx.fillRect(x, y, w, h)
+      ctx.strokeRect(x, y, w, h)
+    }
   })
 }

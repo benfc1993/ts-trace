@@ -7,6 +7,8 @@ import {
   removeNodeFromFrame,
   getHoveredFrameId,
   nodeWithinFrame,
+  frameTitleHovered,
+  getFrame,
 } from '../frames/frames'
 import { Vector } from '../libs/math/Vector'
 import { handleMouseMove, updateDragTarget } from './handleMouseMove'
@@ -142,7 +144,9 @@ export function updateCursor(): Cursor {
     case DragTarget.Canvas:
       return interactionState.dragging ? 'grabbing' : 'grab'
     case DragTarget.Frame:
-      return 'move'
+      return frameTitleHovered(getFrame(interactionState.hoveredFrameId!))
+        ? 'text'
+        : 'move'
     case DragTarget.Node:
       return 'move'
     case DragTarget.Function:

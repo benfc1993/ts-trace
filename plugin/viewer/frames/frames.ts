@@ -6,9 +6,10 @@ import { moveNode } from '../nodes/moveNode'
 import { GraphNode } from '../parseGraph'
 import { calculateFrameBounds, fitFrameToNode } from './calculateFrameBounds'
 import { drawFrame } from './drawFrame'
-import { Frames } from './types'
+import { Frame, Frames } from './types'
 import { uuid } from '../libs/uuid'
 import { getNodeDimensions } from '../nodes/getNodeDimensions'
+import { argv0 } from 'node:process'
 
 const frames: Frames = {}
 export function clearFrames() {
@@ -40,6 +41,7 @@ export function createFrame() {
     name: 'New frame',
     bounds: { start: Vector.Zero(), end: Vector.Zero() },
     nodes: new Set(),
+    titleBounds: { start: Vector.Zero(), end: Vector.Zero() },
   }
 
   return frames[frameId]
@@ -146,4 +148,13 @@ export function getHoveredFrameId() {
     }
   }
   return null
+}
+
+export function frameTitleHovered(frame: Frame) {
+  return (
+    Mouse.canvasPosition.x > frame.titleBounds.start.x &&
+    Mouse.canvasPosition.x < frame.titleBounds.end.x &&
+    Mouse.canvasPosition.y > frame.titleBounds.start.y &&
+    Mouse.canvasPosition.y < frame.titleBounds.end.y
+  )
 }

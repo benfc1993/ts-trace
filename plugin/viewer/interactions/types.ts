@@ -22,4 +22,10 @@ export type InteractionState = {
   heldKeys: Set<string>
 }
 
-export type Cursor = 'default' | 'pointer' | 'grab' | 'grabbing' | 'move'
+export type Cursor =
+  | 'default'
+  | 'pointer'
+  | 'grab'
+  | 'grabbing'
+  | 'move'
+  | 'text'

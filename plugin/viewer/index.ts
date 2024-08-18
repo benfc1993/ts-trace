@@ -12,6 +12,7 @@ import { Vector } from './libs/math/Vector'
 import { nodes } from './parseGraph'
 import { reset } from './reset'
 import { State } from './types'
+import { drawBoxSelect } from './interactions/boxSelection'
 
 connectToServer()
 
@@ -122,23 +123,7 @@ function draw() {
 
   canvas.style.cursor = updateCursor()
 
-  containedStyles(() => {
-    const interactionState = getInteractionState()
-
-    if (interactionState.boxSelect) {
-      ctx.fillStyle = '#fff'
-      ctx.fillRect(
-        interactionState.boxSelect.x,
-        interactionState.boxSelect.y,
-        (interactionState.dragEnd.x -
-          (interactionState.boxSelect.x - state.canvasOrigin.x) * state.scale) /
-          state.scale,
-        (interactionState.dragEnd.y -
-          (interactionState.boxSelect.y - state.canvasOrigin.y) * state.scale) /
-          state.scale,
-      )
-    }
-  })
+  drawBoxSelect()
 
   requestAnimationFrame(draw)
 }
