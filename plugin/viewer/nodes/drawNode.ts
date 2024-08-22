@@ -1,7 +1,7 @@
 import { ctx } from '..'
 import { NODE_BG, SELECTED_COLOR } from '../colors'
 import { containedStyles } from '../components/containedStyles'
-import { getInteractionState } from '../interactions/interactions'
+import { getInteractionState } from '../interactions/interactionState'
 import { Vector } from '../libs/math/Vector'
 import { GraphNode } from '../parseGraph'
 import { getNodeDimensions } from './getNodeDimensions'

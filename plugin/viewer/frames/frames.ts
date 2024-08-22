@@ -104,36 +104,6 @@ export function moveFrame(frameId: string, delta: Vector) {
   })
 }
 
-export function drawFrames() {
-  Object.values(frames).forEach((frame) => {
-    updateFrameBounds(frame.id)
-    drawFrame(frame)
-
-    frame.nodes.forEach((node) => {
-      Object.entries(node.functions).forEach(([functionName, functionData]) => {
-        functionData.connectionsOut.forEach((connectionOut) => {
-          const connectionId =
-            node.filePath +
-            '#' +
-            functionName +
-            '-' +
-            connectionOut.connectionId
-          const shouldDrawConnection =
-            higlightedConnections.size < 0 ||
-            !higlightedConnections.has(connectionId)
-
-          if (!shouldDrawConnection) return
-
-          state.connectionsToDraw.delete(connectionId)
-
-          drawConnection(connectionId, higlightedConnections.size > 0)
-        })
-      })
-    })
-    frame.nodes.forEach(drawNode)
-  })
-}
-
 export function getHoveredFrameId() {
   const frames = Object.entries(getFrames())
   for (let i = frames.length - 1; i >= 0; i--) {

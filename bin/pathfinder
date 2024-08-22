@@ -40,5 +40,6 @@ if [[ $watch = 1 ]]; then
     echo -e $(printf "${YELLOW}Watching $project")
     echo ""
     echo -e $(printf "${ENDCOLOR}")
-    node "$SCRIPT_DIR/../dist/server/index.js" -p $project
+    node "$SCRIPT_DIR/../dist/server/index.js" -p $project --watch
 fi
+node "$SCRIPT_DIR/../dist/server/index.js" -p $project

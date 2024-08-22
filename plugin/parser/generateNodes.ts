@@ -36,10 +36,14 @@ function generateNodes(traces: ApplicationTraces, islandRoots: string[]) {
     let islandIndex = i
     const islandRoot = islandRoots[i]
     const toVisit: string[] = [islandRoot]
+    const visited: Set<string> = new Set()
 
     while (toVisit.length > 0) {
       const filePath = toVisit.shift()
+
       if (!filePath) break
+      if (visited.has(filePath)) continue
+      visited.add(filePath)
 
       const callTrace = traces[filePath]
       if (!callTrace) continue
@@ -51,7 +55,10 @@ function generateNodes(traces: ApplicationTraces, islandRoots: string[]) {
       let skip = false
 
       for (const trace of tracesArray) {
-        if (seen.has(`${filePath}#${trace}`)) continue
+        if (seen.has(`${filePath}#${trace}`)) {
+          continue
+        }
+
         seen.add(`${filePath}#${trace}`)
         if (
           nodes[`${filePath}#${trace}`] &&
@@ -59,7 +66,7 @@ function generateNodes(traces: ApplicationTraces, islandRoots: string[]) {
           nodes[`${filePath}#${trace}`].islandIndex !== i
         ) {
           islandIndex = nodes[`${filePath}#${trace}`].islandIndex
-          toVisit.unshift(islandRoot)
+          toVisit.unshift(filePath)
           skip = true
           break
         }

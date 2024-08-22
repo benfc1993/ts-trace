@@ -10,33 +10,20 @@ import {
   frameTitleHovered,
   getFrame,
 } from '../frames/frames'
-import { Vector } from '../libs/math/Vector'
 import { handleMouseMove, updateDragTarget } from './handleMouseMove'
-import { Cursor, DragTarget, InteractionState } from './types'
+import { Cursor, DragTarget } from './types'
 import { handleZoom } from './handleZoom'
 import { getNodeById } from '../nodes/getNodes'
 import { handleLeftClick } from './handleLeftClick'
-import { Immutable } from '../libs/Immutable'
 import { handleRightClick } from './handleRightClick'
+import {
+  getInteractionState,
+  setBoxSelect,
+  setDragging,
+  setDragTarget,
+} from './interactionState'
 
 window.addEventListener('resize', resize)
-
-const interactionState: InteractionState = {
-  dragTarget: DragTarget.None,
-  dragging: false,
-  boxSelect: null,
-  dragStart: Vector.Zero(),
-  dragEnd: Vector.Zero(),
-  hoveredNodeId: null,
-  selectedNodeIds: new Set(),
-  hoveredFrameId: null,
-  hoveredFunctionId: null,
-  heldKeys: new Set(),
-}
-
-export function getInteractionState(): Immutable<InteractionState> {
-  return interactionState
-}
 
 export function addInteraction(canvas: HTMLCanvasElement) {
   canvas.addEventListener('mouseup', (event) => {
@@ -49,11 +36,11 @@ export function addInteraction(canvas: HTMLCanvasElement) {
   canvas.addEventListener('wheel', handleZoom)
 
   window.addEventListener('keydown', (event) => {
+    const interactionState = getInteractionState()
     interactionState.heldKeys.add(event.key)
-    if (event.key === ' ') state.paused = !state.paused
 
     if (event.key === 'Alt') {
-      setHoveredElement('', DragTarget.Canvas)
+      setDragTarget(DragTarget.Canvas)
     }
 
     if (event.key === 'f') {
@@ -71,7 +58,7 @@ export function addInteraction(canvas: HTMLCanvasElement) {
   })
 
   window.addEventListener('keyup', (event) => {
-    interactionState.heldKeys.delete(event.key)
+    getInteractionState().heldKeys.delete(event.key)
     if (event.key === 'Alt') updateDragTarget()
   })
 
@@ -87,8 +74,9 @@ export function addInteraction(canvas: HTMLCanvasElement) {
 }
 
 function completeDragging(checkFrame: boolean = false) {
+  const interactionState = getInteractionState()
   if (interactionState.boxSelect) {
-    interactionState.boxSelect = null
+    setBoxSelect(null)
   }
   if (interactionState.hoveredNodeId) {
     const movedNode = getNodeById(interactionState.hoveredNodeId)
@@ -109,6 +97,10 @@ function completeDragging(checkFrame: boolean = false) {
 
     interactionState.selectedNodeIds.add(interactionState.hoveredNodeId)
 
+    interactionState.selectedNodeIds.forEach((id) => {
+      updateFilePosition(getNodeById(id))
+    })
+
     if (hoveredNodeInFrame)
       interactionState.selectedNodeIds.forEach((id) => {
         addNodeToFrame(hoveredFrame, getNodeById(id))
@@ -121,23 +113,18 @@ function completeDragging(checkFrame: boolean = false) {
     getFrameNodes(interactionState.hoveredFrameId).forEach(updateFilePosition)
   }
 
-  interactionState.dragging = false
-  setHoveredElement(
-    '',
+  setDragging(false)
+
+  setDragTarget(
     interactionState.dragTarget === DragTarget.Canvas
       ? DragTarget.Canvas
       : DragTarget.None,
   )
 }
 
-export function setHoveredElement(Id: string, type: DragTarget) {
-  interactionState.dragTarget = type
-  interactionState.hoveredNodeId = type === DragTarget.Node ? Id : null
-  interactionState.hoveredFrameId = type === DragTarget.Frame ? Id : null
-  interactionState.hoveredFunctionId = type === DragTarget.Function ? Id : null
-}
-
 export function updateCursor(): Cursor {
+  const interactionState = getInteractionState()
+
   switch (interactionState.dragTarget) {
     case DragTarget.None:
       return 'default'
@@ -154,28 +141,4 @@ export function updateCursor(): Cursor {
     default:
       return 'default'
   }
-}
-
-export function clearSelection() {
-  interactionState.selectedNodeIds.clear()
-}
-
-export function setDragTarget(dragTarget: DragTarget) {
-  interactionState.dragTarget = dragTarget
-}
-
-export function setBoxSelect(boxSelect: Vector) {
-  interactionState.boxSelect = boxSelect
-}
-
-export function setDragEnd(dragEnd: Vector) {
-  interactionState.dragEnd = dragEnd
-}
-
-export function setDragStart(dragStart: Vector) {
-  interactionState.dragStart = dragStart
-}
-
-export function setDragging(dragging: boolean) {
-  interactionState.dragging = dragging
 }

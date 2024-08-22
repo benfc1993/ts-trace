@@ -2,12 +2,8 @@ import { containedStyles } from './components/containedStyles'
 import { connectToServer } from './connectToServer'
 import { connectionLines, drawConnection } from './connections'
 import { drawNode } from './nodes/drawNode'
-import { drawFrames } from './frames/frames'
-import {
-  addInteraction,
-  getInteractionState,
-  updateCursor,
-} from './interactions/interactions'
+import { drawFrames } from './frames/drawFrame'
+import { addInteraction, updateCursor } from './interactions/interactions'
 import { Vector } from './libs/math/Vector'
 import { nodes } from './parseGraph'
 import { reset } from './reset'

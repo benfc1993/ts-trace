@@ -4,7 +4,7 @@ export function generateIslands(nodes: ApplicationTraces) {
   const fileIslands: Record<string, [number, boolean]> = {}
   let islandIndex = -1
 
-  Object.entries(nodes).forEach(([filePath, node]) => {
+  Object.entries(nodes).forEach(([filePath, node], idx) => {
     const isIsland = Object.values(node.calledBy).length === 0
     if (!fileIslands[filePath])
       fileIslands[filePath] = [++islandIndex, isIsland]

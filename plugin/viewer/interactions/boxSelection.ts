@@ -8,7 +8,7 @@ import {
   getInteractionState,
   setBoxSelect,
   setDragTarget,
-} from './interactions'
+} from './interactionState'
 import { DragTarget } from './types'
 
 export function startBoxSelect() {

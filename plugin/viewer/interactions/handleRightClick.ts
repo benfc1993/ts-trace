@@ -1,6 +1,6 @@
 import { removeNodeFromFrame } from '../frames/frames'
 import { getNodeById } from '../nodes/getNodes'
-import { getInteractionState } from './interactions'
+import { getInteractionState } from './interactionState'
 import { DragTarget } from './types'
 
 export function handleRightClick() {

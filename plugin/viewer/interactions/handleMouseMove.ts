@@ -14,8 +14,10 @@ import {
   setDragEnd,
   setDragStart,
   setDragTarget,
-  setHoveredElement,
-} from './interactions'
+  setHoveredFrameId,
+  setHoveredFunctionId,
+  setHoveredNodeId,
+} from './interactionState'
 import { DragTarget } from './types'
 
 export function handleMouseMove(event: MouseEvent) {
@@ -56,7 +58,7 @@ export function updateDragTarget() {
   }
 }
 
-export function updateMouseMove(event: MouseEvent) {
+function updateMouseMove(event: MouseEvent) {
   const interactionState = getInteractionState()
   const { canvas } = ctx
   Mouse.x = event.pageX - canvas.offsetLeft
@@ -105,4 +107,11 @@ function handleDragging(mouseMove: Vector) {
       if (removeAfterDrag)
         interactionState.selectedNodeIds.delete(interactionState.hoveredNodeId)
   }
+}
+
+function setHoveredElement(Id: string, type: DragTarget) {
+  setDragTarget(type)
+  setHoveredNodeId(type === DragTarget.Node ? Id : null)
+  setHoveredFrameId(type === DragTarget.Frame ? Id : null)
+  setHoveredFunctionId(type === DragTarget.Function ? Id : null)
 }

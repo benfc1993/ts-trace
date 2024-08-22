@@ -10,7 +10,7 @@ import {
   clearSelection,
   getInteractionState,
   setDragging,
-} from './interactions'
+} from './interactionState'
 import { DragTarget } from './types'
 
 export function handleLeftClick() {

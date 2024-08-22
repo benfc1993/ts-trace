@@ -47,6 +47,8 @@ app.get('/', (_req, res) => {
 
 httpServer.listen(9476, () => {
   console.log('Pathfinder is running on http://localhost:9476')
+
+  if (process.argv.indexOf('--watch') < 0) return
   const watcher = watch(rootDir, { persistent: true, recursive: true })
   watcher.on('change', async (_, fileName) => {
     if (!fileName.includes('.pathfinder') && fileName.at(-1) === '~') {
