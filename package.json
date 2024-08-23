@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "rm -rf build && mkdir build && cp -r plugin/viewer/fonts build/fonts && cp plugin/viewer/index.html build/index.html && ./bin/pathfinder -p ./project/tsconfig.json && cp ./.pathfinder/graph.json ./build/graph.json && cp ./.pathfinder/filePositions.json ./build/filePositions.json && esbuild ./plugin/viewer/index.ts --bundle --watch --outdir=build --minify --servedir=build",
+    "dev": "rm -rf build && mkdir build && cp -r plugin/viewer/fonts build/fonts && cp plugin/viewer/index.html build/index.html && ./bin/pathfinder -p ./project/tsconfig.json --dev && cp ./.pathfinder/graph.json ./build/graph.json && cp ./.pathfinder/filePositions.json ./build/filePositions.json && esbuild ./plugin/viewer/index.ts --bundle --watch --outdir=build --minify --servedir=build",
     "build:parser": "esbuild ./plugin/parser/index.ts --bundle --outfile=./dist/parser.cjs --minify --platform=node --external:ts-morph",
     "build:viewer": "mkdir -p dist/viewer && cp plugin/viewer/index.html dist/viewer/index.html && cp -r plugin/viewer/fonts dist/viewer/fonts && esbuild ./plugin/viewer/index.ts --bundle --outfile=./dist/viewer/index.js --minify --external:*graph.json",
     "build:server": "mkdir -p dist/server && esbuild ./plugin/server/index.ts --bundle --platform=node --outfile=./dist/server/index.js --minify",

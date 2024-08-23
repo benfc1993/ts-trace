@@ -112,6 +112,7 @@ export async function parseGraph() {
 
   Object.values(nodes).forEach(updateFilePosition)
   clearFrames()
+  initialiseFrames()
   return nodes
 }
 
@@ -178,4 +179,21 @@ function positionDownstreamNode(
   if (upstreamNode.position.x + xSpacing < downstreamNode.position.x) return
 
   downstreamNode.position.x = upstreamNode.position.x + xSpacing
+}
+
+async function initialiseFrames() {
+  const savedFrames = (await fetch('frames.json').then((res) => {
+    if (res.ok) return res.json()
+    else return {}
+  })) as Record<string, { id: string; name: string; nodes: string[] }>
+  console.log(savedFrames)
+
+  Object.values(savedFrames).forEach((frame) => {
+    const frameInstance = createFrame(frame.id)
+    frameInstance.name = frame.name
+    frame.nodes.forEach((nodeId) => {
+      const node = getNodeById(nodeId)
+      addNodeToFrame(frameInstance.id, node)
+    })
+  })
 }

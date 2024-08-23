@@ -13,6 +13,7 @@ const interactionState: InteractionState = {
   hoveredFrameId: null,
   hoveredFunctionId: null,
   heldKeys: new Set(),
+  editingFrameName: null,
 }
 
 export function getInteractionState(): Immutable<InteractionState> {
@@ -53,4 +54,10 @@ export function setHoveredFrameId(frameId: string | null) {
 
 export function setHoveredFunctionId(functionId: string | null) {
   interactionState.hoveredFunctionId = functionId
+}
+
+export function setEditingFrameTitle(
+  editingFrame: { frameId: string; currentName: string } | null,
+) {
+  interactionState.editingFrameName = editingFrame
 }

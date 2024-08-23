@@ -51,7 +51,7 @@ export function updateDragTarget() {
     setHoveredElement(hoveredNodeId, DragTarget.Node)
   }
 
-  const hoveredFunctionId = getHoveredFunctionId()
+  const hoveredFunctionId = getHoveredFunctionId(hoveredNodeId)
   if (hoveredFunctionId) {
     setHoveredElement(hoveredFunctionId, DragTarget.Function)
     setHoveredFunction(hoveredFunctionId)
@@ -88,9 +88,11 @@ function handleDragging(mouseMove: Vector) {
       state.canvasOrigin.x -= mouseMove.x
       state.canvasOrigin.y -= mouseMove.y
       ctx.translate(mouseMove.x, mouseMove.y)
+      return
     case DragTarget.Frame:
       if (!interactionState.hoveredFrameId) return
       moveFrame(interactionState.hoveredFrameId, mouseMove)
+      return
     case DragTarget.Node:
       if (!interactionState.hoveredNodeId) return
       const removeAfterDrag = !interactionState.selectedNodeIds.has(
@@ -106,6 +108,7 @@ function handleDragging(mouseMove: Vector) {
 
       if (removeAfterDrag)
         interactionState.selectedNodeIds.delete(interactionState.hoveredNodeId)
+      return
   }
 }
 

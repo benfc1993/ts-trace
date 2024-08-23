@@ -22,6 +22,7 @@ import {
   setDragging,
   setDragTarget,
 } from './interactionState'
+import { editFrameName } from '../frames/editFrameName'
 
 window.addEventListener('resize', resize)
 
@@ -41,6 +42,15 @@ export function addInteraction(canvas: HTMLCanvasElement) {
 
     if (event.key === 'Alt') {
       setDragTarget(DragTarget.Canvas)
+    }
+
+    if (interactionState.editingFrameName) {
+      editFrameName(
+        interactionState.editingFrameName.frameId,
+        interactionState.editingFrameName.currentName,
+        event.key,
+      )
+      return
     }
 
     if (event.key === 'f') {

@@ -5,6 +5,7 @@ import { Vector } from '../libs/math/Vector'
 import { getNodeDimensions } from '../nodes/getNodeDimensions'
 import { nodes } from '../parseGraph'
 import {
+  clearSelection,
   getInteractionState,
   setBoxSelect,
   setDragTarget,
@@ -46,6 +47,8 @@ export function updateBoxSelection() {
     boxY1 = boxY2
     boxY2 = temp
   }
+
+  clearSelection()
 
   Object.values(nodes).forEach((node) => {
     const {

@@ -1,5 +1,4 @@
-import test from 'node:test'
-import { Mouse, ctx, higlightedConnections, state } from '..'
+import { ctx, higlightedConnections, state } from '..'
 import { FRAME_BG } from '../colors'
 import { containedStyles } from '../components/containedStyles'
 import { FRAME_PADDING } from './calculateFrameBounds'
@@ -8,6 +7,7 @@ import { Vector } from '../libs/math/Vector'
 import { drawConnection } from '../connections'
 import { drawNode } from '../nodes/drawNode'
 import { getFrames, updateFrameBounds } from './frames'
+import { getInteractionState } from '../interactions/interactionState'
 
 const FRAME_BORDER_WIDTH = 3
 
@@ -37,14 +37,21 @@ export function drawFrame(frame: Frame) {
     )
     const textMeasurements = ctx.measureText(frame.name)
     frame.titleBounds = {
-      start: new Vector(frame.bounds.start.x + 10, frame.bounds.start.y + 10),
+      start: new Vector(frame.bounds.start.x + 10, frame.bounds.start.y + 13),
       end: new Vector(
         frame.bounds.start.x + 10 + textMeasurements.actualBoundingBoxRight,
-        frame.bounds.start.y +
-          10 +
-          FRAME_PADDING / 2 +
-          textMeasurements.actualBoundingBoxAscent,
+        frame.bounds.start.y + 14 + textMeasurements.actualBoundingBoxAscent,
       ),
+    }
+    if (getInteractionState().editingFrameName?.frameId === frame.id) {
+      const trailingSpace =
+        frame.name.replace(/^[a-zA-Z\s]*[a-zA-Z]{1}/, '').length * 15
+      ctx.fillRect(
+        frame.titleBounds.end.x + 2 + trailingSpace,
+        frame.titleBounds.start.y,
+        2,
+        Math.max(20, frame.titleBounds.end.y - frame.titleBounds.start.y),
+      )
     }
   })
 }

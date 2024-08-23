@@ -20,6 +20,10 @@ while [[ $# -gt 0 ]]; do
             watch=1
             shift
             ;;
+        -d|--dev)
+            dev=1
+            shift
+            ;;
     esac
     shift
 done
@@ -33,6 +37,10 @@ node "$SCRIPT_DIR/../dist/parser.cjs" -p $project
 
 echo -e $(printf "${GREEN}Done Parsing")
 echo ""
+
+if [[ $dev = 1 ]]; then
+    exit 0
+fi
 
 if [[ $watch = 1 ]]; then
     echo -e $(printf "${BLUE}Starting Server")

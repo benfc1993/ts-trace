@@ -10,12 +10,18 @@ export function clickOnFunction(functionId: string): void {
   addConnectionHighlights(functionId)
 }
 
-export function getHoveredFunctionId(): string | null {
-  const functionKeys = Object.keys(functionPositions)
+export function getHoveredFunctionId(
+  withinNode?: string | null,
+): string | null {
+  let functionKeys = Object.keys(functionPositions)
+  if (withinNode)
+    functionKeys = functionKeys.filter((functionId) =>
+      functionId.startsWith(withinNode),
+    )
 
   for (let i = 0; i < functionKeys.length; i++) {
-    const [functionName, functionPosition] =
-      Object.entries(functionPositions)[i]
+    const functionName = functionKeys[i]
+    const functionPosition = functionPositions[functionName]
     if (
       Mouse.canvasPosition.x > functionPosition.start.x &&
       Mouse.canvasPosition.x < functionPosition.end.x &&
@@ -30,7 +36,7 @@ export function getHoveredFunctionId(): string | null {
 
 export function getHoveredNodeId() {
   const files = Object.entries(nodes)
-  for (let i = 0; i < files.length; i++) {
+  for (let i = files.length - 1; i >= 0; i--) {
     const [file, node] = files[i]
     if (
       Mouse.canvasPosition.y > node.position.y - NODE_BORDER_WIDTH &&

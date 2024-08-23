@@ -20,6 +20,7 @@ export type InteractionState = {
   hoveredFrameId: string | null
   hoveredFunctionId: string | null
   heldKeys: Set<string>
+  editingFrameName: { currentName: string; frameId: string } | null
 }
 
 export type Cursor =

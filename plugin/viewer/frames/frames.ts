@@ -1,15 +1,12 @@
-import { Mouse, higlightedConnections, state } from '..'
-import { drawConnection } from '../connections'
-import { drawNode } from '../nodes/drawNode'
+import { Mouse } from '..'
 import { Vector } from '../libs/math/Vector'
 import { moveNode } from '../nodes/moveNode'
 import { GraphNode } from '../parseGraph'
 import { calculateFrameBounds, fitFrameToNode } from './calculateFrameBounds'
-import { drawFrame } from './drawFrame'
 import { Frame, Frames } from './types'
 import { uuid } from '../libs/uuid'
 import { getNodeDimensions } from '../nodes/getNodeDimensions'
-import { argv0 } from 'node:process'
+import { saveFrame } from '../connectToServer'
 
 const frames: Frames = {}
 export function clearFrames() {
@@ -33,8 +30,8 @@ export function getFrame(frameId: string) {
   return frames[frameId]
 }
 
-export function createFrame() {
-  const frameId = uuid()
+export function createFrame(id?: string) {
+  const frameId = id ?? uuid()
 
   frames[frameId] = {
     id: frameId,
@@ -54,14 +51,16 @@ export function addNodeToFrame(frameId: string, node: GraphNode) {
 
   const { start, end } = fitFrameToNode(frame.bounds, node)
   frame.bounds = { start, end }
+  saveFrame(frame)
 }
 
 export function removeNodeFromFrame(frameId: string, node: GraphNode) {
   node.groupId = null
   const frame = frames[frameId]
   frame.nodes.delete(node)
+  saveFrame(frame)
 
-  if (frame.nodes.size <= 0) deleteFrame(frameId)
+  if (frame.nodes.size <= 0) return deleteFrame(frameId)
 }
 
 export function getFrameNodes(frameId: string) {

@@ -37,6 +37,7 @@ io.on('connection', async (client) => {
       }
     },
   )
+  client.on('saveFrame', saveFrame)
 })
 
 app.use(express.static(`${cwd()}/.pathfinder`))
@@ -85,4 +86,18 @@ async function saveUpdatedFilePositions() {
     JSON.stringify(savedFilePositions),
   )
   updateFilePositionLock = false
+}
+
+async function saveFrame(frameData: {
+  id: string
+  name: string
+  nodes: string[]
+}) {
+  const savedFrames = await readFile(`./.pathfinder/frames.json`, 'utf-8')
+    .then((str) => JSON.parse(str))
+    .catch(() => ({}))
+
+  savedFrames[frameData.id] = frameData
+
+  writeFileSync('./.pathfinder/frames.json', JSON.stringify(savedFrames))
 }
